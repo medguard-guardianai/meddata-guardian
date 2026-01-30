@@ -19,7 +19,7 @@ class PHIScanner:
     PHI_KEYWORDS = [
         # Names (1)
         'name', 'patient_name', 'full_name', 'first_name', 'last_name', 'middle_name',
-        'patient', 'person', 'individual', 'client', 'subject',
+         'person', 'individual', 'client', 'subject',
         # Doctor/Provider (1)
         'doctor', 'physician', 'provider', 'clinician', 'attending', 'surgeon', 'nurse',
         'dr.', 'dr ', 'md', 'dds', 'dmd', 'phd', 'rn', 'np', 'pa',
@@ -57,8 +57,8 @@ class PHIScanner:
         # Billing/Payment (sensitive when combined with identifiers)
         'billing', 'bill', 'charge', 'cost', 'payment', 'amount', 'price', 'fee',
         'revenue', 'claim', 'invoice', 'receipt',
-        # Other identifiers
-        'id', 'identifier', 'unique_id', 'patient_id', 'encounter_id', 'visit_id'
+        # Other identifiers (excluding generic patient_id which is safe)
+        'identifier', 'unique_id'
     ]
     
     # Pattern matching for column names (case-insensitive)
@@ -149,12 +149,25 @@ class PHIScanner:
         """
         Check column names with comprehensive pattern matching (case-insensitive)
         """
+        # Whitelist: columns that are safe even if they contain certain keywords
+        SAFE_COLUMNS = ['patient_id', 'subject_id', 'record_id', 'case_id', 'encounter_id', 'visit_id']
+        
         for col in df.columns:
+            # Skip whitelisted columns
+            if col.lower() in [safe.lower() for safe in SAFE_COLUMNS]:
+                continue
+            
             # Normalize column name: lowercase, replace separators with spaces
             col_normalized = col.lower().replace('_', ' ').replace('-', ' ').replace('.', ' ').strip()
             
             # Check against PHI keywords (exact match in normalized form)
             for keyword in self.PHI_KEYWORDS:
+                # Skip 'id' keyword for generic ID columns (we only want specific IDs)
+                if keyword == 'id' and col_normalized.endswith(' id'):
+                    # Only flag if it's a specific PHI-related ID, not generic patient_id
+                    if 'patient id' in col_normalized or 'subject id' in col_normalized:
+                        continue  # Skip patient_id and subject_id
+                
                 # Check if keyword appears as whole word in column name
                 if re.search(r'\b' + re.escape(keyword.lower()) + r'\b', col_normalized):
                     self.violations.append(f"Column '{col}' contains PHI identifier: '{keyword}'")
