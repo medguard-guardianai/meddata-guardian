@@ -1,0 +1,14 @@
+
+============================================================
+  TOPIC: Heart Disease — Admission-Urgency-Mediated Racial Disparity  |  LANGUAGE: Raw (20+ MIMIC categories)
+============================================================
+Cohort built: 5000 admissions, 10 columns
+Target distribution: {0: 4003, 1: 997}
+HIPAA: safe=True, residual_phi_warnings=0
+Causal method: dp_pc, edges: 19
+  [DISPUTED]  age → arterial_stiffness → length_of_stay
+  [CONFIRMED]  race → admit_type → hospital_expire_flag
+  [CONFIRMED]  insurance → length_of_stay → hospital_expire_flag
+C1=0.990  C2=0.465  C3=0.676  C4=0.024  CDS=0.629  (threshold_met=False)
+Recruitment needed: 4,950 patients, $7,425,000, solver=Optimal
+Verdict: REJECTED

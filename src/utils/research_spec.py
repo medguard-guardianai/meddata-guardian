@@ -148,6 +148,71 @@ DOMAIN_KNOWLEDGE = {
         ],
         "symptom_sex_mediators": [],
     },
+    "mimic_admin": {
+        "protected_primary": ["race", "gender", "ethnicity"],
+        "protected_secondary": ["insurance", "language", "marital_status"],
+        "proxy_columns": {
+            "insurance": "care access / SES proxy (mediates race → length_of_stay)",
+            "language": "access proxy (non-English speakers face care delays)",
+        },
+        "legitimate_paths": [
+            ("age", "comorbidity_burden", "length_of_stay", "Clinical: older patients have longer, medically-justified stays"),
+        ],
+        "illegitimate_paths": [
+            ("race", "length_of_stay", "hospital_expire_flag", "Disparity: differential care intensity by race"),
+            ("insurance", "admit_type", "length_of_stay", "Proxy: insurance status mediates care urgency/access"),
+        ],
+        "key_intersections": ["race × gender × age", "race × insurance"],
+        "clinical_constraints": [
+            ("age", "range", "[0, 120] years"),
+            ("length_of_stay", "range", "[0, 365] days"),
+        ],
+        "symptom_sex_mediators": [],
+    },
+    "mimic_diabetes_insurance": {
+        # Research idea: does insurance-mediated care access explain disparities
+        # in diabetes admission severity, independent of legitimate clinical need?
+        "protected_primary": ["race", "gender", "ethnicity"],
+        "protected_secondary": ["insurance", "language", "marital_status"],
+        "proxy_columns": {
+            "insurance": "care access proxy (mediates race → admission urgency → length_of_stay)",
+        },
+        "legitimate_paths": [
+            ("age", "comorbidity_burden", "length_of_stay", "Clinical: older diabetic patients have more complications, legitimately longer stays"),
+        ],
+        "illegitimate_paths": [
+            ("race", "insurance", "admit_type", "Disparity: uninsured/Medicaid diabetic patients routed to emergency rather than elective admission, proxy for delayed outpatient diagnosis"),
+            ("insurance", "admit_type", "hospital_expire_flag", "Proxy: insurance status affects care urgency and thus mortality risk, independent of disease severity"),
+        ],
+        "key_intersections": ["race × insurance", "race × gender × age"],
+        "clinical_constraints": [
+            ("age", "range", "[0, 120] years"),
+            ("length_of_stay", "range", "[0, 365] days"),
+        ],
+        "symptom_sex_mediators": [],
+    },
+    "mimic_heart_admission_urgency": {
+        # Research idea: does admission urgency mediate racial disparity in
+        # in-hospital mortality for heart disease patients?
+        "protected_primary": ["race", "gender", "ethnicity"],
+        "protected_secondary": ["insurance", "language", "marital_status"],
+        "proxy_columns": {
+            "insurance": "care access proxy (mediates length_of_stay → mortality)",
+        },
+        "legitimate_paths": [
+            ("age", "arterial_stiffness", "length_of_stay", "Clinical: older cardiac patients have more complex, legitimately longer admissions"),
+        ],
+        "illegitimate_paths": [
+            ("race", "admit_type", "hospital_expire_flag", "Disparity: differential emergency-vs-elective admission routing by race, proxy for delayed/missed preventive cardiology care"),
+            ("insurance", "length_of_stay", "hospital_expire_flag", "Proxy: under-insured patients discharged earlier than clinically ideal, elevating mortality risk"),
+        ],
+        "key_intersections": ["race × insurance", "race × gender × age"],
+        "clinical_constraints": [
+            ("age", "range", "[0, 120] years"),
+            ("length_of_stay", "range", "[0, 365] days"),
+        ],
+        "symptom_sex_mediators": [],
+    },
 }
 
 # Minimum sample sizes from PAC bounds (conservative estimates from literature)

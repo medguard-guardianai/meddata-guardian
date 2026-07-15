@@ -1,0 +1,42 @@
+{
+  "cert_id": "929f17648ee25e434b35d718",
+  "timestamp": "2026-07-15T16:09:38.971665",
+  "dataset_hash": "845024c127e58f1a3968309363eeccd68efa4865c34ace9ae1d2dcfc599f670f",
+  "spec_id": "mimic_diabetes_insurance_diabetes_bucketed",
+  "use_case": "research",
+  "irb_protocol": "IRB-2024-DIABETES_INSURANCE__BUCKETED",
+  "cds_score_before": 0.658,
+  "cds_score_after": 0.658,
+  "cds_threshold": 0.75,
+  "condition_scores": {
+    "pathway": 0.895,
+    "statistical": 0.768,
+    "coverage": 0.707,
+    "intersectional": 0.025
+  },
+  "dp_epsilon": 0.0,
+  "dp_delta": 1e-06,
+  "reidentification_risk": 0.0,
+  "k_anonymity": 5,
+  "hipaa_safe_harbor": true,
+  "n_generated": 0,
+  "n_recruited_needed": 1441,
+  "insufficiency_flags": [
+    "INSUFFICIENCY MASKING: subgroup 'race=Unknown' has Power=0.075 < 0.80 (n=175, n*=200, d=0.017). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'race=American Indian/Alaska Native' has Power=0.235 < 0.80 (n=13, n*=200, d=0.148). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'insurance=No charge' has Power=0.754 < 0.80 (n=4, n*=200, d=0.569). Disparities may be undetectable \u2014 subgroup is under-powered."
+  ],
+  "fda_samd_compliant": false,
+  "eu_ai_act_compliant": false,
+  "hipaa_compliant": true,
+  "verdict": "CONDITIONALLY_APPROVED",
+  "conditions": [
+    "Resolve 3 insufficiency masking flag(s)",
+    "Complete recruitment of 1441 additional patients before deployment"
+  ],
+  "recommendations": [
+    "Review minimum intervention plan in Stage 4 output",
+    "Re-run FIDES audit after data collection to verify improvement"
+  ],
+  "signature": "SHA256:d4cd0d7c84cb4f9f5261c5a036efe01259d927d1aa0a9a8bdea7c3cb38fd49e4"
+}

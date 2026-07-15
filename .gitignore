@@ -10,11 +10,11 @@ ENV/
 *.egg-info/
 dist/
 build/
-
+node_modules/
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints
-
+data
 # IDE
 .vscode/
 .idea/
@@ -35,3 +35,7 @@ outputs/*.png
 
 # Environment
 .env
+
+# MIMIC / credentials
+cookies.txt
+data/mimic/*.csv.gz

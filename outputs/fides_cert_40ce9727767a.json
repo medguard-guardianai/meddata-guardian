@@ -1,0 +1,42 @@
+{
+  "cert_id": "40ce9727767a591bb1047459",
+  "timestamp": "2026-07-15T16:09:58.147422",
+  "dataset_hash": "0e8f5a1edb658000abbf6bf9db1258c907579168972fb8e69355c9df233f1c32",
+  "spec_id": "mimic_heart_admission_urgency_heart_disease_bucketed",
+  "use_case": "research",
+  "irb_protocol": "IRB-2024-HEART_ADMISSION_URGENCY__BUCKETED",
+  "cds_score_before": 0.702,
+  "cds_score_after": 0.702,
+  "cds_threshold": 0.75,
+  "condition_scores": {
+    "pathway": 0.978,
+    "statistical": 0.796,
+    "coverage": 0.734,
+    "intersectional": 0.024
+  },
+  "dp_epsilon": 0.0,
+  "dp_delta": 1e-06,
+  "reidentification_risk": 0.0,
+  "k_anonymity": 5,
+  "hipaa_safe_harbor": true,
+  "n_generated": 0,
+  "n_recruited_needed": 1453,
+  "insufficiency_flags": [
+    "INSUFFICIENCY MASKING: subgroup 'race=American Indian/Alaska Native' has Power=0.284 < 0.80 (n=20, n*=200, d=0.124). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'race=Pacific Islander' has Power=0.092 < 0.80 (n=4, n*=200, d=0.127). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'insurance=No charge' has Power=0.705 < 0.80 (n=4, n*=200, d=0.499). Disparities may be undetectable \u2014 subgroup is under-powered."
+  ],
+  "fda_samd_compliant": false,
+  "eu_ai_act_compliant": false,
+  "hipaa_compliant": true,
+  "verdict": "CONDITIONALLY_APPROVED",
+  "conditions": [
+    "Resolve 3 insufficiency masking flag(s)",
+    "Complete recruitment of 1453 additional patients before deployment"
+  ],
+  "recommendations": [
+    "Review minimum intervention plan in Stage 4 output",
+    "Re-run FIDES audit after data collection to verify improvement"
+  ],
+  "signature": "SHA256:b647a6a718383c2f44c1c6061b6544a18741e4a6e236ee82069bdcaac691b9e4"
+}
