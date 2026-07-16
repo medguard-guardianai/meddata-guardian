@@ -68,10 +68,14 @@ def run_topic(topic):
 
     df = build_cohort(
         icd_prefixes=topic["icd_prefixes"], target_name=topic["target_name"],
-        sample_size=SAMPLE_SIZE, bucket_language=False,
+        sample_size=SAMPLE_SIZE, bucket_language=False, include_labs=True,
     )
     log(f"\nCohort built: {df.shape[0]} admissions, {df.shape[1]} columns")
     log(f"Target distribution: {df[topic['target_name']].value_counts().to_dict()}")
+
+    cohort_csv_path = os.path.join("data", "mimic", f"cohort_{topic['key']}.csv")
+    df.to_csv(cohort_csv_path, index=False)
+    log(f"Cohort CSV saved: {cohort_csv_path}")
 
     log("\n" + "-" * 60)
     log("STAGE 0 — Research Specification")

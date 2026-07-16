@@ -1,0 +1,49 @@
+{
+  "cert_id": "5bcd733be7338c0ac0f9ab33",
+  "timestamp": "2026-07-15T19:21:17.649758",
+  "dataset_hash": "257a5bc47e2f882d51a2b3376a922a8d4c059baaf629d099349b7f9d75ae5080",
+  "spec_id": "mimic_heart_admission_urgency_heart_disease",
+  "use_case": "research",
+  "irb_protocol": "IRB-2024-HEART_ADMISSION_URGENCY",
+  "cds_score_before": 0.526,
+  "cds_score_after": 0.526,
+  "cds_threshold": 0.75,
+  "condition_scores": {
+    "pathway": 0.985,
+    "statistical": 0.465,
+    "coverage": 0.17,
+    "intersectional": 0.024
+  },
+  "dp_epsilon": 0.0,
+  "dp_delta": 1e-06,
+  "reidentification_risk": 0.0,
+  "k_anonymity": 5,
+  "hipaa_safe_harbor": true,
+  "n_generated": 0,
+  "n_recruited_needed": 5165,
+  "insufficiency_flags": [
+    "INSUFFICIENCY MASKING: subgroup 'race=American Indian/Alaska Native' has Power=0.284 < 0.80 (n=20, n*=200, d=0.124). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'race=Pacific Islander' has Power=0.092 < 0.80 (n=4, n*=200, d=0.127). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Other' has Power=0.362 < 0.80 (n=15, n*=200, d=0.166). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Portuguese' has Power=0.151 < 0.80 (n=17, n*=200, d=0.090). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=French' has Power=0.025 < 0.80 (n=1, n*=200, d=0.000). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Arabic' has Power=0.063 < 0.80 (n=9, n*=200, d=0.057). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Somali' has Power=0.581 < 0.80 (n=3, n*=200, d=0.499). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Polish' has Power=0.581 < 0.80 (n=3, n*=200, d=0.499). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Khmer' has Power=0.423 < 0.80 (n=2, n*=200, d=0.499). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Korean' has Power=0.705 < 0.80 (n=4, n*=200, d=0.499). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'language=Armenian' has Power=0.025 < 0.80 (n=1, n*=200, d=0.000). Disparities may be undetectable \u2014 subgroup is under-powered.",
+    "INSUFFICIENCY MASKING: subgroup 'insurance=No charge' has Power=0.705 < 0.80 (n=4, n*=200, d=0.499). Disparities may be undetectable \u2014 subgroup is under-powered."
+  ],
+  "fda_samd_compliant": false,
+  "eu_ai_act_compliant": false,
+  "hipaa_compliant": true,
+  "verdict": "REJECTED",
+  "conditions": [
+    "CDS score 0.53 below threshold 0.75"
+  ],
+  "recommendations": [
+    "Run Stage 4 intervention plan to identify minimum data collection required"
+  ],
+  "signature": "SHA256:d786c683e4c45135e68b0020cc0a2b9775482f02efb09994f11a5ea14ead44f6"
+}

@@ -1,0 +1,476 @@
+
+============================================================
+  FIDES — Diabetic Kidney Impairment Severity
+  Hypothesis: Does race predict kidney complication severity in
+  diabetic patients via admission urgency, independent of glucose?
+============================================================
+
+Building base diabetic cohort (larger sample, since we'll filter to diabetes=1 only)...
+Base cohort: 20000 admissions (4888 diabetic)
+Diabetic-only cohort with kidney target: 4303 admissions, 16 columns
+Columns: ['age', 'gender', 'race', 'insurance', 'marital_status', 'language', 'admit_type', 'length_of_stay', 'hospital_expire_flag', 'bun', 'creatinine', 'glucose', 'hba1c', 'potassium', 'troponin', 'kidney_impairment']
+Kidney impairment distribution: {1: 2299, 0: 2004}
+
+------------------------------------------------------------
+STAGE 0 — Research Specification
+------------------------------------------------------------
+=== FIDES Research Specification ===
+Domain:         mimic_kidney_impairment
+Target:         kidney_impairment (binary)
+Use case:       research
+
+Protected attributes (4):
+  [SECONDARY] age — Age is a secondary protected attribute and biological modifier
+  [PRIMARY] gender — Demographic protected attribute — direct discrimination risk
+  [PRIMARY] race — Demographic protected attribute — direct discrimination risk
+  [SECONDARY] language — Age is a secondary protected attribute and biological modifier
+
+Proxy variables (1):
+  marital_status — social support proxy (may mediate kidney disease monitoring/follow-up quality)
+
+Legitimate paths (1):
+  KEEP: glucose → diabetic_nephropathy_mechanism → kidney_impairment
+
+Illegitimate paths (2):
+  BLOCK: race → admit_type → kidney_impairment (Disparity: differential admission urgency by race affecting detection/management of kidney complications)
+  BLOCK: marital_status → length_of_stay → kidney_impairment (Proxy: reduced social support mediates shorter stays and less thorough kidney monitoring)
+
+Clinical constraints: 5 rules loaded
+Intersections to monitor: race × gender × age, race × marital_status
+
+------------------------------------------------------------
+STAGE 1 — HIPAA Ingestion
+------------------------------------------------------------
+=======================================================
+FIDES Stage 1: HIPAA Ingestion
+=======================================================
+  Dataset hash: eec861630d0dc365...
+  Shape: (4303, 16)
+
+  Status: SAFE
+  Clean shape: (4303, 16)
+  Ready for Stage 2.
+
+Audit: hipaa_safe=True, residual_phi_warnings=0
+
+------------------------------------------------------------
+STAGE 2 — Causal Discovery
+------------------------------------------------------------
+================================================================
+FIDES Stage 2 — DP-PC Causal Discovery
+  Dataset shape   : 4303 rows × 16 columns
+  Privacy budget ε: 1.0
+  CI test α       : 0.05
+  random_state    : 42
+================================================================
+
+[1/5] Encoding columns…
+      Encoded 16 features from 16 columns (4303 samples).
+      ε per CI test : 0.00833333  (ε=1.0 ÷ 120 max pairs)
+
+[2/5] Configuring DP-FisherZ independence test…
+[3/5] Running PC algorithm with DP noise injected into CI tests…
+      PC finished.  CI tests executed: 990
+[4/5] Converting CausalGraph → NetworkX DiGraph…
+      DAG: 16 nodes, 27 directed edges (27 incl. undirected-as-bidirected).
+
+[5/5] Privacy ledger:  ε₁ = 1.00000000 consumed  (990 tests × 0.00833333 each)
+
+[+] Validating edges against ResearchSpec causal paths…
+    0 confirmed  |  3 disputed  (3 total spec paths)
+    [✗]  DISPUTED  glucose → diabetic_nephropathy_mechanism → kidney_impairment
+    [✗]  DISPUTED  race → admit_type → kidney_impairment
+    [✗]  DISPUTED  marital_status → length_of_stay → kidney_impairment
+
+Causal discovery complete in 0.20s  |  method = dp_pc
+================================================================
+Method used: dp_pc, edges: 27
+  [DISPUTED]  glucose → diabetic_nephropathy_mechanism → kidney_impairment
+  [DISPUTED]  race → admit_type → kidney_impairment
+  [DISPUTED]  marital_status → length_of_stay → kidney_impairment
+
+------------------------------------------------------------
+STAGE 3 — CDS Assessment
+------------------------------------------------------------
+================================================================
+FIDES Stage 3 — Four-Condition CDS Assessment
+  Domain       : mimic_kidney_impairment
+  Use case     : research
+  Dataset      : 4303 rows × 16 cols
+  Weights      : {'pathway': 0.4, 'statistical': 0.2, 'coverage': 0.2, 'intersectional': 0.2}
+================================================================
+
+── Condition 1: Pathway Sufficiency ──────────────────────────
+  [C1] Computing pathway sufficiency via mediation analysis…
+       C1 score = 0.7248
+
+── Condition 2: Statistical Sufficiency ──────────────────────
+  [C2] Computing statistical sufficiency and power per subgroup…
+       C2 score = 0.0091  |  55 insufficiency masking flag(s)
+
+── Condition 3: Phenotypic Coverage ──────────────────────────
+  [C3] Estimating phenotypic coverage via KDE…
+       C3 score = 0.2317
+
+── Condition 4: Intersectional Sufficiency ───────────────────
+  [C4] Counting intersectional subgroup cells…
+       C4 score = 0.1866
+
+================================================================
+CDS ASSESSMENT SUMMARY
+================================================================
+  C1 Pathway Sufficiency      : 0.7248  (w=0.40)
+  C2 Statistical Sufficiency  : 0.0091  (w=0.20)
+  C3 Phenotypic Coverage      : 0.2317  (w=0.20)
+  C4 Intersectional Suff.     : 0.1866  (w=0.20)
+  ─────────────────────────────────────────────────────
+  CDS Score                   : 0.3754  (95% CI: [0.0000, 1.0000])
+  Threshold (            research) : 0.75
+  Decision                    : FAIL
+
+  Insufficiency Masking Flags (55):
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=English' has Power=0.025 < 0.80 (n=3648, n*=200, d=0.046). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Other' has Power=0.025 < 0.80 (n=16, n*=200, d=0.238). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Spanish' has Power=0.025 < 0.80 (n=235, n*=200, d=0.017). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Haitian' has Power=0.025 < 0.80 (n=51, n*=200, d=0.148). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Kabuverdianu' has Power=0.025 < 0.80 (n=47, n*=200, d=0.217). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Chinese' has Power=0.025 < 0.80 (n=61, n*=200, d=0.200). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Russian' has Power=0.025 < 0.80 (n=120, n*=200, d=0.195). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Amharic' has Power=0.025 < 0.80 (n=6, n*=200, d=0.009). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Persian' has Power=0.025 < 0.80 (n=10, n*=200, d=0.477). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Vietnamese' has Power=0.025 < 0.80 (n=18, n*=200, d=0.251). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Portuguese' has Power=0.025 < 0.80 (n=28, n*=200, d=0.370). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Italian' has Power=0.025 < 0.80 (n=11, n*=200, d=0.224). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Unknown' has Power=0.025 < 0.80 (n=11, n*=200, d=0.201). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=French' has Power=0.025 < 0.80 (n=3, n*=200, d=0.350). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Modern Greek (1453-)' has Power=0.025 < 0.80 (n=10, n*=200, d=0.162). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=American Sign Language' has Power=0.025 < 0.80 (n=2, n*=200, d=0.295). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Korean' has Power=0.025 < 0.80 (n=2, n*=200, d=0.196). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Arabic' has Power=0.025 < 0.80 (n=11, n*=200, d=0.215). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Khmer' has Power=0.025 < 0.80 (n=8, n*=200, d=0.279). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'age=Polish' has Power=0.025 < 0.80 (n=1, n*=200, d=0.000). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'gender=F' has Power=0.025 < 0.80 (n=1944, n*=200, d=0.027). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'gender=M' has Power=0.025 < 0.80 (n=2359, n*=200, d=0.027). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=Unknown' has Power=0.025 < 0.80 (n=155, n*=200, d=0.011). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=White' has Power=0.025 < 0.80 (n=2604, n*=200, d=0.002). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=Asian' has Power=0.025 < 0.80 (n=148, n*=200, d=0.162). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=Black' has Power=0.025 < 0.80 (n=915, n*=200, d=0.024). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=Hispanic' has Power=0.025 < 0.80 (n=306, n*=200, d=0.049). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=Other' has Power=0.025 < 0.80 (n=165, n*=200, d=0.062). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=American Indian/Alaska Native' has Power=0.025 < 0.80 (n=9, n*=200, d=0.243). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'race=Pacific Islander' has Power=0.025 < 0.80 (n=1, n*=200, d=0.000). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=English' has Power=0.025 < 0.80 (n=3648, n*=200, d=0.046). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Other' has Power=0.025 < 0.80 (n=16, n*=200, d=0.238). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Spanish' has Power=0.025 < 0.80 (n=235, n*=200, d=0.017). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Haitian' has Power=0.025 < 0.80 (n=51, n*=200, d=0.148). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Kabuverdianu' has Power=0.025 < 0.80 (n=47, n*=200, d=0.217). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Chinese' has Power=0.025 < 0.80 (n=61, n*=200, d=0.200). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Russian' has Power=0.025 < 0.80 (n=120, n*=200, d=0.195). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Amharic' has Power=0.025 < 0.80 (n=6, n*=200, d=0.009). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Persian' has Power=0.025 < 0.80 (n=10, n*=200, d=0.477). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Vietnamese' has Power=0.025 < 0.80 (n=18, n*=200, d=0.251). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Portuguese' has Power=0.025 < 0.80 (n=28, n*=200, d=0.370). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Italian' has Power=0.025 < 0.80 (n=11, n*=200, d=0.224). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Unknown' has Power=0.025 < 0.80 (n=11, n*=200, d=0.201). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=French' has Power=0.025 < 0.80 (n=3, n*=200, d=0.350). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Modern Greek (1453-)' has Power=0.025 < 0.80 (n=10, n*=200, d=0.162). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=American Sign Language' has Power=0.025 < 0.80 (n=2, n*=200, d=0.295). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Korean' has Power=0.025 < 0.80 (n=2, n*=200, d=0.196). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Arabic' has Power=0.025 < 0.80 (n=11, n*=200, d=0.215). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Khmer' has Power=0.025 < 0.80 (n=8, n*=200, d=0.279). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'language=Polish' has Power=0.025 < 0.80 (n=1, n*=200, d=0.000). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'marital_status=Unknown' has Power=0.025 < 0.80 (n=104, n*=200, d=0.010). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'marital_status=SINGLE' has Power=0.025 < 0.80 (n=1294, n*=200, d=0.021). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'marital_status=MARRIED' has Power=0.025 < 0.80 (n=1930, n*=200, d=0.022). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'marital_status=DIVORCED' has Power=0.025 < 0.80 (n=373, n*=200, d=0.032). Disparities may be undetectable — subgroup is under-powered.
+    WARNING: INSUFFICIENCY MASKING: subgroup 'marital_status=WIDOWED' has Power=0.025 < 0.80 (n=602, n*=200, d=0.063). Disparities may be undetectable — subgroup is under-powered.
+
+  Recommendations:
+    • STATISTICAL: Several subgroups are underpowered. Oversample minority subgroups to reach n* = 200 per group.
+    • COVERAGE: Subgroups do not span the full clinical feature space. Augment with synthetic data (FIDES Stage 1 synthetic generator) calibrated to underrepresented regions of the manifold.
+    • INTERSECTIONAL: Many intersection cells have n < 50. Consider stratified recruitment or synthetic augmentation for sparse cells.
+    • INSUFFICIENCY MASKING: 55 subgroup(s) are statistically underpowered to detect disparities. Report these gaps in your Model Card and obtain expert review before deployment.
+
+Assessment complete in 1.38s
+================================================================
+C1=0.725  C2=0.009  C3=0.232  C4=0.187  CDS=0.375  (threshold_met=False)
+Insufficiency masking flags: 55
+
+------------------------------------------------------------
+STAGE 4 — Minimum Intervention Plan
+------------------------------------------------------------
+================================================================
+FIDES Stage 4 — Minimum Intervention Optimizer
+  Domain   : mimic_kidney_impairment
+  Use case : research
+  CDS score: 0.3754  (threshold met: False)
+================================================================
+
+[1/5] Parsing CDS condition gaps…
+      Statistical gaps : 55 subgroups
+      Coverage gaps    : 33 subgroups below 0.9
+      Intersectional   : 109 underpopulated cells
+
+[2/5] Aggregating needs across conditions…
+      Total groups requiring recruitment: 54
+        age = English: need 50 patients  [intersectional]
+        age = Other: need 221 patients  [coverage]
+        age = Spanish: need 50 patients  [coverage]
+        age = Haitian: need 179 patients  [coverage]
+        age = Kabuverdianu: need 184 patients  [coverage]
+        age = Chinese: need 167 patients  [coverage]
+        age = Russian: need 100 patients  [coverage]
+        age = Amharic: need 233 patients  [coverage]
+        age = Persian: need 228 patients  [coverage]
+        age = Vietnamese: need 219 patients  [coverage]
+        age = Portuguese: need 172 patients  [intersectional]
+        age = Italian: need 189 patients  [intersectional]
+        age = Unknown: need 189 patients  [intersectional]
+        age = French: need 197 patients  [intersectional]
+        age = Modern Greek (1453-): need 190 patients  [statistical]
+        age = American Sign Language: need 198 patients  [statistical]
+        age = Korean: need 198 patients  [statistical]
+        age = Arabic: need 189 patients  [statistical]
+        age = Khmer: need 192 patients  [statistical]
+        age = Polish: need 199 patients  [statistical]
+        gender = F: need 50 patients  [coverage]
+        gender = M: need 50 patients  [coverage]
+        race = Unknown: need 65 patients  [coverage]
+        race = White: need 20 patients  [coverage]
+        race = Asian: need 72 patients  [coverage]
+        race = Black: need 20 patients  [coverage]
+        race = Hispanic: need 50 patients  [coverage]
+        race = Other: need 55 patients  [coverage]
+        race = American Indian/Alaska Native: need 230 patients  [coverage]
+        race = Pacific Islander: need 239 patients  [coverage]
+        language = Other: need 221 patients  [coverage]
+        language = Spanish: need 20 patients  [coverage]
+        language = Haitian: need 179 patients  [coverage]
+        language = Kabuverdianu: need 184 patients  [coverage]
+        language = Chinese: need 167 patients  [coverage]
+        language = Russian: need 100 patients  [coverage]
+        language = Amharic: need 233 patients  [coverage]
+        language = Persian: need 228 patients  [coverage]
+        language = Vietnamese: need 219 patients  [coverage]
+        language = Portuguese: need 172 patients  [statistical]
+        language = Italian: need 189 patients  [statistical]
+        language = Unknown: need 189 patients  [statistical]
+        language = French: need 197 patients  [statistical]
+        language = Modern Greek (1453-): need 190 patients  [statistical]
+        language = American Sign Language: need 198 patients  [statistical]
+        language = Korean: need 198 patients  [statistical]
+        language = Arabic: need 189 patients  [statistical]
+        language = Khmer: need 192 patients  [statistical]
+        language = Polish: need 199 patients  [statistical]
+        marital_status = Unknown: need 116 patients  [coverage]
+        marital_status = SINGLE: need 20 patients  [coverage]
+        marital_status = MARRIED: need 20 patients  [coverage]
+        marital_status = DIVORCED: need 20 patients  [coverage]
+        marital_status = WIDOWED: need 20 patients  [coverage]
+
+[3/5] Solving Minimum Intervention MILP…
+      MILP status: Optimal
+
+[4/5] Building GroupRecruitmentTarget objects…
+
+[5/5] Recruitment Plan Summary
+================================================================
+  Total new patients required : 8,055
+  Estimated cost              : $12,082,500 USD
+  Solver status               : Optimal
+  Feasible                    : True
+
+  Priority Queue (54 groups):
+     1. [CRITICAL]  race = Pacific Islander
+          n_required =  239  |  driver = coverage
+          sites: Pacific Islander community health networks; Academic medical center research registries
+     2. [CRITICAL]  age = Amharic
+          n_required =  233  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+     3. [CRITICAL]  language = Amharic
+          n_required =  233  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+     4. [CRITICAL]  race = American Indian/Alaska Native
+          n_required =  230  |  driver = coverage
+          sites: Indian Health Service (IHS) facilities; Academic medical center research registries
+     5. [CRITICAL]  age = Persian
+          n_required =  228  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+     6. [CRITICAL]  language = Persian
+          n_required =  228  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+     7. [CRITICAL]  age = Other
+          n_required =  221  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+     8. [CRITICAL]  language = Other
+          n_required =  221  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+     9. [CRITICAL]  age = Vietnamese
+          n_required =  219  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    10. [CRITICAL]  language = Vietnamese
+          n_required =  219  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    11. [CRITICAL]  age = Polish
+          n_required =  199  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    12. [CRITICAL]  language = Polish
+          n_required =  199  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    13. [CRITICAL]  age = American Sign Language
+          n_required =  198  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    14. [CRITICAL]  age = Korean
+          n_required =  198  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    15. [CRITICAL]  language = American Sign Language
+          n_required =  198  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    16. [CRITICAL]  language = Korean
+          n_required =  198  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    17. [CRITICAL]  age = French
+          n_required =  197  |  driver = intersectional
+          sites: Academic medical center research registries; Community health center partnerships
+    18. [CRITICAL]  language = French
+          n_required =  197  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    19. [CRITICAL]  age = Khmer
+          n_required =  192  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    20. [CRITICAL]  language = Khmer
+          n_required =  192  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    21. [CRITICAL]  age = Modern Greek (1453-)
+          n_required =  190  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    22. [CRITICAL]  language = Modern Greek (1453-)
+          n_required =  190  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    23. [CRITICAL]  age = Italian
+          n_required =  189  |  driver = intersectional
+          sites: Academic medical center research registries; Community health center partnerships
+    24. [CRITICAL]  age = Unknown
+          n_required =  189  |  driver = intersectional
+          sites: Academic medical center research registries; Community health center partnerships
+    25. [CRITICAL]  age = Arabic
+          n_required =  189  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    26. [CRITICAL]  language = Italian
+          n_required =  189  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    27. [CRITICAL]  language = Unknown
+          n_required =  189  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    28. [CRITICAL]  language = Arabic
+          n_required =  189  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    29. [CRITICAL]  age = Kabuverdianu
+          n_required =  184  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    30. [CRITICAL]  language = Kabuverdianu
+          n_required =  184  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    31. [CRITICAL]  age = Haitian
+          n_required =  179  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    32. [CRITICAL]  language = Haitian
+          n_required =  179  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    33. [CRITICAL]  age = Portuguese
+          n_required =  172  |  driver = intersectional
+          sites: Academic medical center research registries; Community health center partnerships
+    34. [CRITICAL]  language = Portuguese
+          n_required =  172  |  driver = statistical
+          sites: Academic medical center research registries; Community health center partnerships
+    35. [CRITICAL]  age = Chinese
+          n_required =  167  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    36. [CRITICAL]  language = Chinese
+          n_required =  167  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    37. [CRITICAL]  marital_status = Unknown
+          n_required =  116  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    38. [    HIGH]  age = Russian
+          n_required =  100  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    39. [    HIGH]  language = Russian
+          n_required =  100  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    40. [    HIGH]  race = Asian
+          n_required =   72  |  driver = coverage
+          sites: Asian Health Services; multilingual FQHCs; Academic medical center research registries
+    41. [    HIGH]  race = Unknown
+          n_required =   65  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    42. [    HIGH]  race = Other
+          n_required =   55  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    43. [    HIGH]  age = English
+          n_required =   50  |  driver = intersectional
+          sites: Academic medical center research registries; Community health center partnerships
+    44. [    HIGH]  age = Spanish
+          n_required =   50  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    45. [    HIGH]  gender = F
+          n_required =   50  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    46. [    HIGH]  gender = M
+          n_required =   50  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    47. [    HIGH]  race = Hispanic
+          n_required =   50  |  driver = coverage
+          sites: Latino community health centers; promotora networks; Academic medical center research registries
+    48. [  MEDIUM]  race = White
+          n_required =   20  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    49. [  MEDIUM]  race = Black
+          n_required =   20  |  driver = coverage
+          sites: HBCU-affiliated clinics; Black-serving FQHCs; Academic medical center research registries
+    50. [  MEDIUM]  language = Spanish
+          n_required =   20  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    51. [  MEDIUM]  marital_status = SINGLE
+          n_required =   20  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    52. [  MEDIUM]  marital_status = MARRIED
+          n_required =   20  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    53. [  MEDIUM]  marital_status = DIVORCED
+          n_required =   20  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+    54. [  MEDIUM]  marital_status = WIDOWED
+          n_required =   20  |  driver = coverage
+          sites: Academic medical center research registries; Community health center partnerships
+================================================================
+Recruitment needed: 8,055 patients, $12,082,500, solver=Optimal
+
+------------------------------------------------------------
+STAGE 6 — Certificate
+------------------------------------------------------------
+=======================================================
+FIDES Stage 6: Certificate Builder
+=======================================================
+  JSON certificate saved: outputs\fides_cert_4f5f5eac75a8.json
+  PDF generation skipped: No module named 'reportlab'
+
+  VERDICT:        REJECTED
+  CDS before:     0.375
+  CDS after:      0.375  (threshold: 0.750)
+  DP guarantee:   (ε=0.0, δ=1.0e-06)
+  Re-id risk:     0.0000  (<0.09: ✓)
+  k-anonymity:    k=5
+  HIPAA:          ✓
+  FDA SaMD:       ✗
+  Conditions:
+    • CDS score 0.38 below threshold 0.75
+Verdict: REJECTED
+HIPAA=True  FDA=False  EU_AI_Act=False
+
+Cohort CSV saved: data\mimic\cohort_kidney_impairment.csv
+Research report: outputs\REPORT_kidney_impairment_20260716_012404.md
+
+============================================================
+  KIDNEY IMPAIRMENT TOPIC COMPLETE
+============================================================

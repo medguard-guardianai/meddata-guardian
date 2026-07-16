@@ -179,6 +179,8 @@ DOMAIN_KNOWLEDGE = {
         },
         "legitimate_paths": [
             ("age", "comorbidity_burden", "length_of_stay", "Clinical: older diabetic patients have more complications, legitimately longer stays"),
+            ("glucose", "glycemic_severity", "length_of_stay", "Clinical: poor glycemic control (high glucose/HbA1c) legitimately predicts longer, more complex admissions"),
+            ("glucose", "diabetic_kidney_stress", "creatinine", "Clinical: poor glycemic control legitimately damages kidney function over time (diabetic nephropathy)"),
         ],
         "illegitimate_paths": [
             ("race", "insurance", "admit_type", "Disparity: uninsured/Medicaid diabetic patients routed to emergency rather than elective admission, proxy for delayed outpatient diagnosis"),
@@ -188,6 +190,10 @@ DOMAIN_KNOWLEDGE = {
         "clinical_constraints": [
             ("age", "range", "[0, 120] years"),
             ("length_of_stay", "range", "[0, 365] days"),
+            ("glucose", "range", "[40, 700] mg/dL"),
+            ("hba1c", "range", "[3.5, 20.0] %"),
+            ("bun", "range", "[5, 150] mg/dL"),
+            ("potassium", "range", "[2.0, 9.0] mEq/L"),
         ],
         "symptom_sex_mediators": [],
     },
@@ -201,6 +207,8 @@ DOMAIN_KNOWLEDGE = {
         },
         "legitimate_paths": [
             ("age", "arterial_stiffness", "length_of_stay", "Clinical: older cardiac patients have more complex, legitimately longer admissions"),
+            ("troponin", "cardiac_injury_severity", "hospital_expire_flag", "Clinical: elevated troponin (cardiac injury marker) legitimately predicts mortality risk"),
+            ("creatinine", "cardiorenal_severity", "hospital_expire_flag", "Clinical: kidney dysfunction (elevated creatinine/BUN) reflects cardiorenal syndrome, legitimately linked to cardiac mortality risk"),
         ],
         "illegitimate_paths": [
             ("race", "admit_type", "hospital_expire_flag", "Disparity: differential emergency-vs-elective admission routing by race, proxy for delayed/missed preventive cardiology care"),
@@ -210,6 +218,66 @@ DOMAIN_KNOWLEDGE = {
         "clinical_constraints": [
             ("age", "range", "[0, 120] years"),
             ("length_of_stay", "range", "[0, 365] days"),
+            ("troponin", "range", "[0.0, 50.0] ng/mL"),
+            ("creatinine", "range", "[0.1, 15.0] mg/dL"),
+            ("bun", "range", "[5, 150] mg/dL"),
+            ("potassium", "range", "[2.0, 9.0] mEq/L"),
+        ],
+        "symptom_sex_mediators": [],
+    },
+    "mimic_kidney_impairment": {
+        # Research idea: does race predict diabetic kidney complication
+        # severity via admission urgency, independent of legitimate glycemic
+        # severity? (Insurance deliberately left out — marital_status used
+        # as the social-support proxy mediator instead.)
+        "protected_primary": ["race", "gender", "ethnicity"],
+        "protected_secondary": ["language", "marital_status"],
+        "proxy_columns": {
+            "marital_status": "social support proxy (may mediate kidney disease monitoring/follow-up quality)",
+        },
+        "legitimate_paths": [
+            ("glucose", "diabetic_nephropathy_mechanism", "kidney_impairment", "Clinical: poor glycemic control legitimately causes progressive kidney damage"),
+        ],
+        "illegitimate_paths": [
+            ("race", "admit_type", "kidney_impairment", "Disparity: differential admission urgency by race affecting detection/management of kidney complications"),
+            ("marital_status", "length_of_stay", "kidney_impairment", "Proxy: reduced social support mediates shorter stays and less thorough kidney monitoring"),
+        ],
+        "key_intersections": ["race × gender × age", "race × marital_status"],
+        "clinical_constraints": [
+            ("age", "range", "[0, 120] years"),
+            ("length_of_stay", "range", "[0, 365] days"),
+            ("glucose", "range", "[40, 700] mg/dL"),
+            ("creatinine", "range", "[0.1, 15.0] mg/dL"),
+            ("bun", "range", "[5, 150] mg/dL"),
+        ],
+        "symptom_sex_mediators": [],
+    },
+    "mimic_kidney_underdiagnosis": {
+        # Research idea: NOT "does diabetes cause kidney damage" (settled
+        # medical fact). Restricting to patients with objective, lab-confirmed
+        # kidney impairment, does race/insurance/social support predict
+        # whether that impairment actually gets clinically diagnosed/coded —
+        # i.e. is diagnostic recognition of a known complication equitable?
+        "protected_primary": ["race", "gender", "ethnicity"],
+        "protected_secondary": ["insurance", "language", "marital_status"],
+        "proxy_columns": {
+            "insurance": "care access proxy (may mediate diagnostic workup thoroughness)",
+            "marital_status": "social support proxy (may mediate follow-up/workup completeness)",
+        },
+        "legitimate_paths": [
+            ("creatinine", "impairment_severity", "undiagnosed_kidney_impairment", "Clinical: more severe/objectively obvious impairment is less likely to be missed diagnostically"),
+        ],
+        "illegitimate_paths": [
+            ("race", "admit_type", "undiagnosed_kidney_impairment", "Disparity: differential admission urgency by race affecting diagnostic workup completeness"),
+            ("insurance", "admit_type", "undiagnosed_kidney_impairment", "Proxy: insurance status affects diagnostic thoroughness/workup completeness"),
+            ("marital_status", "length_of_stay", "undiagnosed_kidney_impairment", "Proxy: reduced social support mediates shorter stays and incomplete diagnostic workup"),
+        ],
+        "key_intersections": ["race × insurance", "race × gender × age"],
+        "clinical_constraints": [
+            ("age", "range", "[0, 120] years"),
+            ("length_of_stay", "range", "[0, 365] days"),
+            ("creatinine", "range", "[0.1, 15.0] mg/dL"),
+            ("bun", "range", "[5, 150] mg/dL"),
         ],
         "symptom_sex_mediators": [],
     },

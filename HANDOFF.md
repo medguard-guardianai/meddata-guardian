@@ -75,8 +75,77 @@ python test_fides_granularity.py
 
 Both scripts print progress live and drop fresh timestamped reports into `outputs/` when done — open the newest `REPORT_*.md` files after running.
 
-## Open Questions for Next Steps
+## Open Questions (as of 2026-07-15)
 
 1. **Why is C4 (Intersectional Sufficiency) stuck near 0.02-0.22 in every run?** Not yet drilled into which exact race×insurance×age combinations are sparse — that's the main unresolved question.
 2. **Lab values (`labevents.csv.gz`) aren't used yet** — current results are administrative/demographic-only (no glucose, HbA1c, troponin, etc.).
 3. Consider trying a "filter out rare subgroups" approach instead of "bucket them together" (keeps real MIMIC category values, just excludes ones too small to analyze) as an alternative to the language bucketing done today.
+
+---
+
+# 2026-07-16 — Lab Integration, New Research Topics, Algorithm Validation Suite
+
+## 1. Lab values integrated (resolves open question #2 above)
+
+`labevents.csv.gz` (2.6GB compressed, ~100M+ rows) is now used. Since it's too large to load whole, `mimic_cohort_builder.py` scans it in chunks, keeping only rows matching a target itemid list and the admissions already in the built cohort. New function: `_extract_labs()`, wired in via `build_cohort(..., include_labs=True)`.
+
+**6 lab columns added** (all standard serum tests, picked via `d_labitems.csv.gz` lookup):
+| Column | MIMIC itemid | Coverage (real, measured) |
+|---|---|---|
+| `glucose` | 50931 | ~73-75% |
+| `creatinine` | 50912 | ~74-75% |
+| `bun` | 51006 | ~75.5% |
+| `potassium` | 50971 | ~75.7% |
+| `hba1c` | 50852 | **~9%** |
+| `troponin` | 51003 | **~9.5%** |
+
+HbA1c/troponin are sparse because they're only ordered when clinically indicated, not as routine bloodwork — this matters a lot for results (see Test 6 below). Checked but **not added** (too sparse to be useful): cholesterol panel (~5%), urine albumin/creatinine ratio (~0.4% — barely ever ordered inpatient).
+
+**Effect on the two existing topics** (diabetes/insurance, heart/admission-urgency): re-ran with all 6 labs included. Core bias findings (`race/insurance → admission urgency → mortality`) stayed **CONFIRMED**, unaffected by adding labs. But CDS scores dropped slightly (diabetes 0.592→0.542, heart 0.641→0.530) — driven by **C3 (Phenotypic Coverage) collapsing** (0.645→0.243 diabetes) once sparse lab columns were added. New legitimate clinical paths added (`glucose → kidney stress → creatinine`, `troponin → cardiac injury → mortality`) came back **DISPUTED** — i.e. adding labs didn't just confirm textbook biology, it's a genuinely mixed result worth reporting honestly, not glossing over.
+
+Current reports reflecting labs: `outputs/REPORT_diabetes_insurance_20260716_003731.md`, `outputs/REPORT_heart_admission_urgency_20260716_003731.md`, `outputs/REPORT_combined_20260716_003731.md`.
+
+**New helper for building lab-derived (not ICD-derived) targets**: `derive_lab_threshold_target()` in `mimic_cohort_builder.py` — creates a binary target from lab thresholds (e.g. `creatinine > 1.5` or `bun > 20`) instead of an ICD code, with an option to restrict to an existing condition first (e.g. only diabetic patients).
+
+**New helper for comorbidity flags**: `build_cohort(..., comorbidity_flags={"ckd_diagnosed": ["585","N18"]})` — cheap to add since `diagnoses_icd` is already fully loaded (unlike labevents), used for the under-diagnosis topic below.
+
+## 2. Two new research topics added
+
+### `mimic_kidney_impairment` (domain in `research_spec.py`)
+*Does race predict diabetic kidney complication severity via admission urgency, independent of glucose severity?* Insurance deliberately excluded here; `marital_status` (social-support proxy) used instead. Target: `kidney_impairment` (creatinine > 1.5 or BUN > 20), restricted to diabetic patients. Script: `test_fides_kidney.py`.
+
+**Result**: all 3 hypothesized paths (including the illegitimate ones) came back **DISPUTED** — a genuinely different result from every admin-urgency topic, where the race/insurance path was always confirmed. CDS = 0.375 (REJECTED), driven by the **worst C2 seen yet (0.009)** — restricting to diabetics-only more than halved the effective cohort while keeping the same demographic granularity.
+
+### `mimic_kidney_underdiagnosis` (refined version — the important design correction)
+Original framing risk: using an actual CKD diagnosis code as the target would be circular (diabetes and CKD codes are usually recorded together by design — doesn't test anything new). **Corrected framing**: restrict to patients with *objective, lab-confirmed* kidney impairment (independent of any diagnosis code), then ask whether race/insurance/social-support predict whether that real impairment was **never diagnostically coded** — i.e. testing equity of diagnostic *recognition*, not the diabetes-kidney biological link (which is settled medicine, not in question). Script: `test_fides_kidney_underdx.py`.
+
+**Result**: cohort restricted from 4,888 diabetics → 2,299 with lab-confirmed impairment. **941/2,299 (41%) had no CKD diagnosis code despite confirmed impairment** — a real, substantial under-recognition finding on its own. But all 4 causal paths (including race/insurance/marital_status) came back **DISPUTED** — no demographic disparity mechanism confirmed here, likely because restricting to only-impaired patients shrank the cohort too far (same C2-collapse pattern as topic above). CDS = 0.454 (REJECTED).
+
+Cohort CSVs for manual inspection: `data/mimic/cohort_kidney_impairment.csv`, `data/mimic/cohort_kidney_underdx.csv` (and `cohort_diabetes_insurance.csv` / `cohort_heart_admission_urgency.csv` for the original two topics — `test_fides_topics.py` now saves these automatically every run).
+
+## 3. Algorithm Validation Suite (new file: `test_fides_validation_suite.py`)
+
+Distinguishes "is the algorithm working correctly" from "what does MIMIC's data show" — six tests, all reusing the already-saved `cohort_diabetes_insurance.csv` (no labevents re-scan needed, runs in a couple minutes total). Report: `outputs/REPORT_validation_suite_20260716_180914.md`.
+
+| Test | What it checks | Result |
+|---|---|---|
+| 1. Known-bias detection (positive control) | Run on synthetic datasets with a bias deliberately built in (`data/synthetic/dataset2_diabetes_gender_bias.csv`, `dataset3_heart_disease_indigenous.csv`) | 0 confirmed causal paths on both — **not a failure**: these domains' hardcoded illegitimate paths reference columns that don't exist in these particular synthetic files. The actual injected bias shows up correctly instead in **C2** (dataset3's C2=0.197 vs dataset2's 0.419 — the "zero Indigenous representation" bias is a representation problem, which C2/C4 test, not C1) |
+| 2. Null control | Shuffle `race` randomly — should reduce/eliminate confirmed bias paths | Confirmed paths dropped 2→1 after shuffling — real data's CONFIRMED finding reflects genuine signal, not noise |
+| 3. Reproducibility | Same input + same seed → same output? | Identical CDS score (0.536) across two runs — fully deterministic |
+| 4. Sample-size sensitivity | Does C2 rise predictably with n? | Yes — C2 rose cleanly and monotonically (0.279→0.349→0.368→0.441) across n=500/1500/3000/5000. Overall CDS score was noisier due to C3's KDE instability at small n — expected, not a bug |
+| 5. Feature-drop ablation | Remove `insurance` entirely — how much does it matter? | Confirmed paths dropped 2→0, CDS 0.536→0.519 — insurance is load-bearing for this domain's specific hypothesis |
+| 6. Lab-by-lab ablation | Which lab actually causes C3 to collapse? | C3 barely moved adding glucose (0.636→0.637), then **collapsed the moment HbA1c was added** (0.637→0.393) and kept falling as more labs were added — confirms HbA1c specifically (not "labs in general") drives the C3 collapse, matching its ~9% coverage |
+
+## 4. Files added today
+
+- Modified `src/utils/mimic_cohort_builder.py` — `_extract_labs()`, `_bucket_language()` (was already there), `derive_lab_threshold_target()`, `comorbidity_flags` param on `build_cohort()`
+- Modified `src/utils/research_spec.py` — added `mimic_kidney_impairment`, `mimic_kidney_underdiagnosis` domain blocks (additive, existing domains untouched)
+- New: `test_fides_kidney.py`, `test_fides_kidney_underdx.py`, `test_fides_validation_suite.py`
+- `test_fides_topics.py` — now also saves each topic's cohort to `data/mimic/cohort_<topic_key>.csv` automatically
+
+## 5. Updated Open Questions
+
+1. **C4 (Intersectional) is still unresolved** — stuck low (0.02-0.22) across every topic and every fix tried so far (language bucketing didn't touch it; it's specifically about sparse `race × insurance` / `race × gender × age` cells).
+2. **Kidney topics both have severely underpowered C2 (~0.008-0.009)** — restricting to diabetic-only, or diabetic+impaired-only, cuts the cohort enough that this needs a much larger base sample (try 50,000+) before the demographic-disparity question can be meaningfully tested.
+3. **HbA1c/troponin's sparse coverage is now confirmed (not just suspected) as the main driver of C3 decline** — worth deciding whether to exclude them from future topics or explicitly frame their sparsity as a finding.
+4. The "filter rare subgroups instead of bucketing" idea (raised 2026-07-15) is still unimplemented.

@@ -1,0 +1,99 @@
+
+============================================================
+  RESEARCH TOPIC: Heart Disease — Admission-Urgency-Mediated Racial Disparity
+  Hypothesis: Does admission urgency (emergency vs. elective) mediate racial disparity in in-hospital mortality for heart disease patients?
+============================================================
+
+Cohort built: 5000 admissions, 14 columns
+Target distribution: {0: 4003, 1: 997}
+
+------------------------------------------------------------
+STAGE 0 — Research Specification
+------------------------------------------------------------
+=== FIDES Research Specification ===
+Domain:         mimic_heart_admission_urgency
+Target:         heart_disease (binary)
+Use case:       research
+
+Protected attributes (4):
+  [SECONDARY] age — Age is a secondary protected attribute and biological modifier
+  [PRIMARY] gender — Demographic protected attribute — direct discrimination risk
+  [PRIMARY] race — Demographic protected attribute — direct discrimination risk
+  [SECONDARY] language — Age is a secondary protected attribute and biological modifier
+
+Proxy variables (1):
+  insurance — care access proxy (mediates length_of_stay → mortality)
+
+Legitimate paths (2):
+  KEEP: age → arterial_stiffness → length_of_stay
+  KEEP: troponin → cardiac_injury_severity → hospital_expire_flag
+
+Illegitimate paths (2):
+  BLOCK: race → admit_type → hospital_expire_flag (Disparity: differential emergency-vs-elective admission routing by race, proxy for delayed/missed preventive cardiology care)
+  BLOCK: insurance → length_of_stay → hospital_expire_flag (Proxy: under-insured patients discharged earlier than clinically ideal, elevating mortality risk)
+
+Clinical constraints: 4 rules loaded
+Intersections to monitor: race × insurance, race × gender × age
+
+------------------------------------------------------------
+STAGE 1 — HIPAA Ingestion
+------------------------------------------------------------
+Audit: hipaa_safe=True, residual_phi_warnings=0
+
+------------------------------------------------------------
+STAGE 2 — Causal Discovery
+------------------------------------------------------------
+Method used: dp_pc
+Causal edges found: 24
+  hospital_expire_flag -> glucose
+  hba1c -> glucose
+  length_of_stay -> glucose
+  heart_disease -> glucose
+  race -> creatinine
+  gender -> creatinine
+  troponin -> creatinine
+  heart_disease -> creatinine
+  age -> hospital_expire_flag
+  admit_type -> hospital_expire_flag
+  race -> insurance
+  race -> age
+  race -> language
+  marital_status -> gender
+  heart_disease -> gender
+  marital_status -> insurance
+  insurance -> age
+  insurance -> language
+  heart_disease -> troponin
+  age -> language
+  language -> age
+  age -> heart_disease
+  admit_type -> length_of_stay
+  length_of_stay -> admit_type
+Path validation:
+  [DISPUTED]  age → arterial_stiffness → length_of_stay
+  [DISPUTED]  troponin → cardiac_injury_severity → hospital_expire_flag
+  [CONFIRMED]  race → admit_type → hospital_expire_flag
+  [CONFIRMED]  insurance → length_of_stay → hospital_expire_flag
+
+------------------------------------------------------------
+STAGE 3 — CDS Assessment
+------------------------------------------------------------
+C1 Pathway        : 0.990
+C2 Statistical    : 0.465
+C3 Coverage       : 0.182
+C4 Intersectional : 0.024
+CDS Score         : 0.530  (threshold met: False)
+Insufficiency masking flags: 12
+
+------------------------------------------------------------
+STAGE 4 — Minimum Intervention Plan
+------------------------------------------------------------
+Total new patients needed: 5,165
+Estimated cost: $7,747,500
+Solver status: Optimal
+
+------------------------------------------------------------
+STAGE 6 — Certificate
+------------------------------------------------------------
+Verdict: REJECTED
+HIPAA=True  FDA=False  EU_AI_Act=False

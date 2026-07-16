@@ -1,0 +1,102 @@
+
+============================================================
+  RESEARCH TOPIC: Diabetes — Insurance-Mediated Care Access
+  Hypothesis: Does insurance status illegitimately mediate diabetes admission urgency and mortality risk, independent of legitimate clinical need (age/comorbidity)?
+============================================================
+
+Cohort built: 5000 admissions, 16 columns
+Target distribution: {0: 3778, 1: 1222}
+
+------------------------------------------------------------
+STAGE 0 — Research Specification
+------------------------------------------------------------
+=== FIDES Research Specification ===
+Domain:         mimic_diabetes_insurance
+Target:         diabetes (binary)
+Use case:       research
+
+Protected attributes (4):
+  [SECONDARY] age — Age is a secondary protected attribute and biological modifier
+  [PRIMARY] gender — Demographic protected attribute — direct discrimination risk
+  [PRIMARY] race — Demographic protected attribute — direct discrimination risk
+  [SECONDARY] language — Age is a secondary protected attribute and biological modifier
+
+Proxy variables (1):
+  insurance — care access proxy (mediates race → admission urgency → length_of_stay)
+
+Legitimate paths (3):
+  KEEP: age → comorbidity_burden → length_of_stay
+  KEEP: glucose → glycemic_severity → length_of_stay
+  KEEP: glucose → diabetic_kidney_stress → creatinine
+
+Illegitimate paths (2):
+  BLOCK: race → insurance → admit_type (Disparity: uninsured/Medicaid diabetic patients routed to emergency rather than elective admission, proxy for delayed outpatient diagnosis)
+  BLOCK: insurance → admit_type → hospital_expire_flag (Proxy: insurance status affects care urgency and thus mortality risk, independent of disease severity)
+
+Clinical constraints: 6 rules loaded
+Intersections to monitor: race × insurance, race × gender × age
+
+------------------------------------------------------------
+STAGE 1 — HIPAA Ingestion
+------------------------------------------------------------
+Audit: hipaa_safe=True, residual_phi_warnings=0
+
+------------------------------------------------------------
+STAGE 2 — Causal Discovery
+------------------------------------------------------------
+Method used: dp_pc
+Causal edges found: 25
+  bun -> hospital_expire_flag
+  length_of_stay -> hospital_expire_flag
+  admit_type -> length_of_stay
+  length_of_stay -> admit_type
+  creatinine -> bun
+  potassium -> bun
+  age -> bun
+  bun -> glucose
+  creatinine -> potassium
+  potassium -> creatinine
+  creatinine -> race
+  language -> insurance
+  language -> race
+  age -> insurance
+  marital_status -> insurance
+  race -> insurance
+  marital_status -> age
+  race -> age
+  diabetes -> age
+  hba1c -> glucose
+  glucose -> diabetes
+  hba1c -> diabetes
+  marital_status -> gender
+  gender -> marital_status
+  gender -> race
+Path validation:
+  [DISPUTED]  age → comorbidity_burden → length_of_stay
+  [DISPUTED]  glucose → glycemic_severity → length_of_stay
+  [DISPUTED]  glucose → diabetic_kidney_stress → creatinine
+  [CONFIRMED]  race → insurance → admit_type
+  [CONFIRMED]  insurance → admit_type → hospital_expire_flag
+
+------------------------------------------------------------
+STAGE 3 — CDS Assessment
+------------------------------------------------------------
+C1 Pathway        : 0.904
+C2 Statistical    : 0.292
+C3 Coverage       : 0.181
+C4 Intersectional : 0.220
+CDS Score         : 0.500  (threshold met: False)
+Insufficiency masking flags: 29
+
+------------------------------------------------------------
+STAGE 4 — Minimum Intervention Plan
+------------------------------------------------------------
+Total new patients needed: 8,550
+Estimated cost: $12,825,000
+Solver status: Optimal
+
+------------------------------------------------------------
+STAGE 6 — Certificate
+------------------------------------------------------------
+Verdict: REJECTED
+HIPAA=True  FDA=False  EU_AI_Act=False
