@@ -6,6 +6,7 @@ No data transmission, HIPAA-compliant. There is no mock/fake response path:
 if the model can't be reached, this raises rather than fabricating output.
 """
 
+import time
 import requests
 from typing import List, Dict
 
@@ -75,27 +76,35 @@ class LocalFMInference:
             Generated text
 
         Raises:
-            RuntimeError: if the Ollama call fails (no fallback to fake output)
+            RuntimeError: if the Ollama call fails after retries (no
+                fallback to fake output — this is a hard failure, not a
+                chance to fabricate a response)
         """
-        try:
-            resp = requests.post(
-                f"{self.base_url}/api/generate",
-                json={
-                    "model": self.model_name,
-                    "prompt": prompt,
-                    "stream": False,
-                    "options": {
-                        "temperature": temperature,
-                        "top_p": top_p,
-                        "num_predict": max_tokens,
+        max_attempts = 3
+        last_error = None
+        for attempt in range(max_attempts):
+            try:
+                resp = requests.post(
+                    f"{self.base_url}/api/generate",
+                    json={
+                        "model": self.model_name,
+                        "prompt": prompt,
+                        "stream": False,
+                        "options": {
+                            "temperature": temperature,
+                            "top_p": top_p,
+                            "num_predict": max_tokens,
+                        },
                     },
-                },
-                timeout=self.timeout,
-            )
-            resp.raise_for_status()
-            return resp.json().get("response", "").strip()
-        except requests.exceptions.RequestException as e:
-            raise RuntimeError(f"Ollama generation failed: {e}") from e
+                    timeout=self.timeout,
+                )
+                resp.raise_for_status()
+                return resp.json().get("response", "").strip()
+            except requests.exceptions.RequestException as e:
+                last_error = e
+                if attempt < max_attempts - 1:
+                    time.sleep(2 ** attempt)  # 1s, 2s backoff before retrying
+        raise RuntimeError(f"Ollama generation failed after {max_attempts} attempts: {last_error}") from last_error
 
     def batch_generate(
         self,

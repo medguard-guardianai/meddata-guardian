@@ -153,13 +153,26 @@ class FIDESCertifier:
                 self.demographic_cols[0],
                 self.outcome_col
             )
-            pathway_passes = pathway_results['illegitimate_strength'] < 0.2  # <20% illegitimate
-            pathway_findings = (
-                f"Path-specific causal effect decomposition:\n"
-                f"  Total effect: {pathway_results['total_effect']:.3f}\n"
-                f"  Illegitimate pathway strength: {pathway_results['illegitimate_strength']:.1%}\n"
-                f"  Status: {'PASS - Care pathways are legitimate' if pathway_passes else 'FAIL - Racial bias detected in care pathways'}"
-            )
+            if not pathway_results['total_effect_significant']:
+                # No statistically detectable raw disparity to begin with —
+                # nothing for this condition to fail. The ratio is undefined
+                # (see causal.compute_psce docstring), not zero.
+                pathway_passes = True
+                pathway_findings = (
+                    f"Path-specific causal effect decomposition:\n"
+                    f"  Total effect: {pathway_results['total_effect']:.4f} "
+                    f"(p={pathway_results['total_effect_pvalue']:.3f}, not significant)\n"
+                    f"  Status: PASS - No statistically detectable raw disparity to decompose"
+                )
+            else:
+                pathway_passes = pathway_results['illegitimate_strength'] < 0.2  # <20% illegitimate
+                pathway_findings = (
+                    f"Path-specific causal effect decomposition:\n"
+                    f"  Total effect: {pathway_results['total_effect']:.4f} "
+                    f"(p={pathway_results['total_effect_pvalue']:.3f})\n"
+                    f"  Illegitimate pathway strength: {pathway_results['illegitimate_strength']:.1%}\n"
+                    f"  Status: {'PASS - Care pathways are legitimate' if pathway_passes else 'FAIL - Racial bias detected in care pathways'}"
+                )
             certifications['care_pathway_sufficiency'] = CertificationResult(
                 condition_name="Care Pathway Sufficiency",
                 passes=pathway_passes,

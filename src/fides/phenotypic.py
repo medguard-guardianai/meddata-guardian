@@ -51,17 +51,24 @@ def compute_coverage(
         >>> coverage['Black'].missing_phenotypes  # Severe phenotypes missing
     """
 
-    # Create severity bins
-    df_copy = df.copy()
-    df_copy['severity_bin'] = pd.qcut(
-        df_copy[severity_col],
-        q=n_bins,
-        labels=[f'Bin{i}' for i in range(n_bins)],
-        duplicates='drop'
-    )
+    if df[severity_col].nunique() < 2:
+        raise ValueError(
+            f"'{severity_col}' has no variance (all values identical) — "
+            f"cannot bin into severity quartiles for phenotypic coverage analysis"
+        )
 
-    # Get bin edges for labels
-    bin_edges = pd.qcut(df[severity_col], q=n_bins, duplicates='drop', retbins=True)[1]
+    # Create severity bins. With many tied values (common for integer counts
+    # like comorbidity counts), qcut's duplicates='drop' can produce fewer
+    # than n_bins actual bins, which crashes if we still hand it n_bins
+    # labels — so bin first, then label by the number of bins actually
+    # produced rather than assuming n_bins survived.
+    df_copy = df.copy()
+    binned, actual_edges = pd.qcut(
+        df_copy[severity_col], q=n_bins, duplicates='drop', retbins=True
+    )
+    actual_n_bins = len(actual_edges) - 1
+    bin_labels = [f'Bin{i}' for i in range(actual_n_bins)]
+    df_copy['severity_bin'] = binned.cat.rename_categories(bin_labels)
 
     results = {}
 

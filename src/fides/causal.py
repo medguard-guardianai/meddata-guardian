@@ -99,8 +99,21 @@ def compute_psce(
             an empty list here is treated as illegitimate/unadjusted.
 
     Returns:
-        Dict with total_effect, direct_effect, illegitimate_strength,
-        and the path enumeration for transparency.
+        Dict with total_effect, direct_effect, illegitimate_strength (a
+        ratio, or None when undefined — see below), and the path
+        enumeration for transparency.
+
+    Note on `illegitimate_strength` stability: this is a ratio
+    (direct_effect / total_effect), which is only meaningful when
+    total_effect is itself distinguishable from zero. If the raw
+    protected_attr -> outcome effect isn't statistically significant
+    (p >= 0.05), there is no detected disparity to decompose in the first
+    place, and dividing by a near-zero denominator produces an arbitrarily
+    large, meaningless ratio (observed: 2367% on one real cohort where the
+    raw gap was ~0). In that case `illegitimate_strength` is set to None
+    and `total_effect_significant` is False — callers should treat "no
+    significant raw effect" as passing this condition, not as an undefined
+    failure.
     """
     if df[protected_attr].nunique() != 2:
         raise ValueError(
@@ -112,11 +125,17 @@ def compute_psce(
     if not paths:
         raise ValueError(f"No paths found from {protected_attr} to {outcome_col} in DAG")
 
-    x = df[protected_attr].astype(float).values
+    import statsmodels.api as sm
+
     y = df[outcome_col].astype(float).values
 
-    # Total effect: simple regression of outcome on protected_attr alone
-    total_effect = float(np.polyfit(x, y, 1)[0])
+    # Total effect: regression of outcome on protected_attr alone, with
+    # its p-value so we know whether the raw gap is even real.
+    X_total = sm.add_constant(df[[protected_attr]].astype(float))
+    model_total = sm.OLS(y, X_total).fit()
+    total_effect = float(model_total.params[protected_attr])
+    total_effect_pvalue = float(model_total.pvalues[protected_attr])
+    total_effect_significant = total_effect_pvalue < 0.05
 
     # Legitimate mediators = union of mediators on paths marked legitimate
     legitimate_mediators = []
@@ -131,20 +150,31 @@ def compute_psce(
     # Direct effect: regression of outcome on protected_attr + legitimate mediators
     if legitimate_mediators:
         design_cols = [protected_attr] + legitimate_mediators
-        X = df[design_cols].astype(float).values
-        X = np.column_stack([np.ones(len(X)), X])
-        coeffs, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
-        direct_effect = float(coeffs[1])  # coefficient on protected_attr, index 0 is intercept
+        X_direct = sm.add_constant(df[design_cols].astype(float))
+        model_direct = sm.OLS(y, X_direct).fit()
+        direct_effect = float(model_direct.params[protected_attr])
     else:
         direct_effect = total_effect  # nothing legitimate to adjust for
 
-    illegitimate_strength = direct_effect / total_effect if total_effect != 0 else 0.0
+    if total_effect_significant:
+        illegitimate_strength = direct_effect / total_effect
+        note = None
+    else:
+        illegitimate_strength = None
+        note = (
+            f"Raw effect not statistically distinguishable from zero "
+            f"(p={total_effect_pvalue:.3f}); illegitimate_strength ratio is "
+            f"undefined and not reported. No detected disparity to decompose."
+        )
 
     return {
         'total_effect': total_effect,
+        'total_effect_pvalue': total_effect_pvalue,
+        'total_effect_significant': total_effect_significant,
         'direct_effect': direct_effect,
         'legitimate_mediators': legitimate_mediators,
         'illegitimate_strength': illegitimate_strength,
+        'note': note,
         'paths': [' → '.join(p) for p in paths],
     }
 

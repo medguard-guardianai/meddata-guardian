@@ -97,19 +97,28 @@ def compute_power_matrix(
                 # For binary outcome (two-proportion z-test)
                 # Power to detect effect_size difference in proportions
                 baseline = baseline_rate
-                alternative = baseline * (1 + effect_size)
-                alternative = min(alternative, 0.99)
 
-                # One-sample proportion z-test power approximation.
-                # Uses abs() because power depends on effect magnitude, not
-                # its sign — a signed difference here would flip power to
-                # ~0 for any well-detectable effect (confirmed bug: a
-                # 15,000-patient group was scoring 0% power before this fix).
-                std_error = np.sqrt(baseline * (1-baseline) / n)
-                z_alpha = stats.norm.ppf(1 - alpha/2)
-                z_beta = abs(baseline - alternative) / std_error
-                power = 1 - stats.norm.cdf(z_alpha - z_beta)
-                power = np.clip(power, 0, 1)
+                if baseline <= 0.0 or baseline >= 1.0:
+                    # Degenerate case: 0% or 100% event rate means zero
+                    # variance in the outcome — std_error would be 0 and the
+                    # z-test power formula divides by it. There's no
+                    # meaningful "effect to detect" against a rate with no
+                    # variance, so report 0 power rather than NaN/inf.
+                    power = 0.0
+                else:
+                    alternative = baseline * (1 + effect_size)
+                    alternative = min(alternative, 0.99)
+
+                    # One-sample proportion z-test power approximation.
+                    # Uses abs() because power depends on effect magnitude, not
+                    # its sign — a signed difference here would flip power to
+                    # ~0 for any well-detectable effect (confirmed bug: a
+                    # 15,000-patient group was scoring 0% power before this fix).
+                    std_error = np.sqrt(baseline * (1-baseline) / n)
+                    z_alpha = stats.norm.ppf(1 - alpha/2)
+                    z_beta = abs(baseline - alternative) / std_error
+                    power = 1 - stats.norm.cdf(z_alpha - z_beta)
+                    power = np.clip(power, 0, 1)
             else:
                 power = 0.5  # Unknown test type
 
@@ -239,12 +248,15 @@ def compute_required_sample_size(
         Required sample size per group
     """
 
-    from statsmodels.stats.power import proportions_ztest
+    if effect_size == 0:
+        raise ValueError("effect_size must be nonzero — a zero effect requires infinite sample size")
+    if not (0.0 < baseline_rate < 1.0):
+        raise ValueError(f"baseline_rate must be in (0, 1); got {baseline_rate}")
 
     # Simplified calculation for proportions
     p0 = baseline_rate
     p1 = baseline_rate * (1 + effect_size)
-    p1 = min(p1, 0.99)
+    p1 = min(max(p1, 0.01), 0.99)
 
     z_alpha = stats.norm.ppf(1 - alpha/2)
     z_beta = stats.norm.ppf(1 - (1 - power)/2)

@@ -122,15 +122,28 @@ def run_condition_1_to_4(df: pd.DataFrame, disease: str, demographic_col: str) -
         dag, mediators_by_path, df_bin = build_causal_dag(df)
         try:
             psce = causal.compute_psce(df_bin, dag, "race_binary", "mortality", mediators_by_path)
-            c2_passes = psce["illegitimate_strength"] < 0.2
-            scores["care_pathway_sufficiency"] = float(c2_passes)
-            findings["care_pathway_sufficiency"] = (
-                f"Total effect (unadjusted): {psce['total_effect']:.4f}, "
-                f"direct effect (adjusted for {psce['legitimate_mediators']}): {psce['direct_effect']:.4f}, "
-                f"illegitimate pathway strength: {psce['illegitimate_strength']:.1%} "
-                f"(White vs. all-other-races binary comparison; comorbidities is the only "
-                f"mediator treated as legitimate/clinical)"
-            )
+            if not psce["total_effect_significant"]:
+                # No statistically detectable raw disparity — nothing to
+                # decompose, so this passes rather than reporting an
+                # undefined/exploded ratio (see causal.py docstring).
+                c2_passes = True
+                scores["care_pathway_sufficiency"] = 1.0
+                findings["care_pathway_sufficiency"] = (
+                    f"Total effect (unadjusted): {psce['total_effect']:.4f} "
+                    f"(p={psce['total_effect_pvalue']:.3f}, not statistically significant) — "
+                    f"no detected raw disparity to decompose; illegitimate_strength undefined."
+                )
+            else:
+                c2_passes = psce["illegitimate_strength"] < 0.2
+                scores["care_pathway_sufficiency"] = float(c2_passes)
+                findings["care_pathway_sufficiency"] = (
+                    f"Total effect (unadjusted): {psce['total_effect']:.4f} "
+                    f"(p={psce['total_effect_pvalue']:.3f}), "
+                    f"direct effect (adjusted for {psce['legitimate_mediators']}): {psce['direct_effect']:.4f}, "
+                    f"illegitimate pathway strength: {psce['illegitimate_strength']:.1%} "
+                    f"(White vs. all-other-races binary comparison; comorbidities is the only "
+                    f"mediator treated as legitimate/clinical)"
+                )
         except Exception as e:
             findings["care_pathway_sufficiency"] = f"NOT COMPUTED: {e}"
 

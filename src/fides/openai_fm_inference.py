@@ -12,9 +12,10 @@ It is never hardcoded, logged, or written to any file by this module.
 """
 
 import os
+import time
 from typing import List
 
-from openai import OpenAI
+from openai import OpenAI, APIError, APIConnectionError, RateLimitError
 
 
 class OpenAIFMInference:
@@ -31,17 +32,28 @@ class OpenAIFMInference:
         self.model_name = model_name
 
     def generate(self, prompt: str, max_tokens: int = 150, temperature: float = 0.3) -> str:
-        """Generate a real completion from the OpenAI API."""
-        try:
-            resp = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
-            return (resp.choices[0].message.content or "").strip()
-        except Exception as e:
-            raise RuntimeError(f"OpenAI generation failed: {e}") from e
+        """Generate a real completion from the OpenAI API, with bounded
+        retry on transient errors (rate limits, connection drops). Raises
+        after retries are exhausted — never falls back to fake output."""
+        max_attempts = 3
+        last_error = None
+        for attempt in range(max_attempts):
+            try:
+                resp = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                )
+                return (resp.choices[0].message.content or "").strip()
+            except (RateLimitError, APIConnectionError, APIError) as e:
+                last_error = e
+                if attempt < max_attempts - 1:
+                    time.sleep(2 ** attempt)
+            except Exception as e:
+                # Non-transient (bad request, auth, etc.) — fail immediately
+                raise RuntimeError(f"OpenAI generation failed: {e}") from e
+        raise RuntimeError(f"OpenAI generation failed after {max_attempts} attempts: {last_error}") from last_error
 
     def batch_generate(self, prompts: List[str], max_tokens: int = 150, temperature: float = 0.3) -> List[str]:
         return [self.generate(p, max_tokens=max_tokens, temperature=temperature) for p in prompts]
