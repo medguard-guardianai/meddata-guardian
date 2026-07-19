@@ -100,12 +100,14 @@ def compute_power_matrix(
                 alternative = baseline * (1 + effect_size)
                 alternative = min(alternative, 0.99)
 
-                # Approximate using statsmodels
-                from statsmodels.stats.power import proportions_ztest
-                # Simplified: compute approximate power
+                # One-sample proportion z-test power approximation.
+                # Uses abs() because power depends on effect magnitude, not
+                # its sign — a signed difference here would flip power to
+                # ~0 for any well-detectable effect (confirmed bug: a
+                # 15,000-patient group was scoring 0% power before this fix).
                 std_error = np.sqrt(baseline * (1-baseline) / n)
                 z_alpha = stats.norm.ppf(1 - alpha/2)
-                z_beta = (baseline - alternative) / std_error
+                z_beta = abs(baseline - alternative) / std_error
                 power = 1 - stats.norm.cdf(z_alpha - z_beta)
                 power = np.clip(power, 0, 1)
             else:

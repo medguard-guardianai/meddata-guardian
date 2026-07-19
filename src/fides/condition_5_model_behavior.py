@@ -40,14 +40,27 @@ class Condition5Evaluator:
     Low scores indicate potential for model-learned bias.
     """
 
-    def __init__(self, use_mock: bool = True):
+    def __init__(self, model_name: str = "mistral", backend: str = "ollama"):
         """
         Initialize Condition 5 evaluator.
 
         Args:
-            use_mock: If True, use mock FM (no GPU needed, for testing)
+            model_name: Model tag to query — an Ollama tag (e.g. "mistral")
+                when backend="ollama", or an OpenAI model (e.g. "gpt-4o-mini")
+                when backend="openai".
+            backend: "ollama" (local, HIPAA-compliant) or "openai" (cloud API,
+                sends the synthetic vignette text over the network — no real
+                patient data, but not the local-only path).
+        There is no mock fallback for either backend — if the model can't be
+        reached this raises rather than fabricating a response.
         """
-        self.fm_inference = LocalFMInference(use_mock=use_mock)
+        if backend == "ollama":
+            self.fm_inference = LocalFMInference(model_name=model_name)
+        elif backend == "openai":
+            from .openai_fm_inference import OpenAIFMInference
+            self.fm_inference = OpenAIFMInference(model_name=model_name)
+        else:
+            raise ValueError(f"Unknown backend '{backend}'. Use 'ollama' or 'openai'.")
         self.bias_detector = ClinicalFMBiasDetector(self.fm_inference)
 
     def evaluate_condition_5(
@@ -266,21 +279,23 @@ def compute_condition_5(
     dataset: pd.DataFrame,
     disease: str,
     demographic_col: str,
-    use_mock: bool = True
+    model_name: str = "mistral",
+    backend: str = "ollama"
 ) -> Tuple[float, ModelBehaviorResult]:
     """
-    Compute Condition 5 score for a dataset.
+    Compute Condition 5 score for a dataset using a real FM (local or cloud).
 
     Args:
         dataset: Clinical dataset
         disease: Disease type
         demographic_col: Demographic column
-        use_mock: Use mock FM (no GPU needed)
+        model_name: Model tag (Ollama tag or OpenAI model name, per backend)
+        backend: "ollama" or "openai"
 
     Returns:
         (c5_score, detailed_result)
     """
-    evaluator = Condition5Evaluator(use_mock=use_mock)
+    evaluator = Condition5Evaluator(model_name=model_name, backend=backend)
     result = evaluator.evaluate_condition_5(dataset, disease, demographic_col)
     c5_score = evaluator.compute_c5_score(result)
     return c5_score, result

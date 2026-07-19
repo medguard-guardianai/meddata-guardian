@@ -1,270 +1,288 @@
 #!/usr/bin/env python3
 """
-FIDES 5-Condition Complete Pipeline for AAAI 2027
+FIDES 5-Condition Validation — Real Data, Real Computation, Real FM
 
-Runs all 5 conditions on all 5 disease cohorts across 4 demographic dimensions.
-Generates results, baseline comparisons, ablation study, and visualizations.
+Runs all applicable FIDES conditions on real MIMIC-IV disease cohorts
+(built by build_disease_cohorts.py from raw MIMIC-IV tables, no fabricated
+fields). No condition is scored by random-number generation or hardcoded
+lookup; every score comes from an actual computation over real data.
+
+Honest limitations (documented, not hidden):
+- C2 (causal) requires a causal DAG. Race is treated as binary
+  (White vs. all other groups combined) because the underlying PSCE
+  implementation's multi-category regression path (factorize + linregress)
+  is not statistically valid for an unordered multi-level race variable.
+- C3 (phenotypic) uses `comorbidities` (real distinct-ICD-code count per
+  admission) as the severity proxy, since no lab-based acuity score is
+  available in the light MIMIC tables used here.
+- C5 (model behavior) only runs for diseases with real guideline-based
+  test scenarios defined in clinical_scenarios.py (cardiac, sepsis,
+  pneumonia) and only for the four demographic groups those scenarios
+  cover (White, Black, Asian, Hispanic). It queries a real local model
+  through Ollama — if Ollama isn't running, this fails loudly rather than
+  falling back to a mock.
 """
 
-import pandas as pd
-import numpy as np
-import json
 import sys
-from pathlib import Path
-from typing import Dict, List
+import json
 import warnings
-warnings.filterwarnings('ignore')
+from pathlib import Path
 
-# Add src to path
+import numpy as np
+import pandas as pd
+
+warnings.filterwarnings("ignore")
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.fides.certification import FIDESCertifier
-from src.fides.baselines import GapAnalysisBaseline, StratifiedGapPowerBaseline, FairlearnBaseline, compare_baselines
+from src.fides import representational, causal, phenotypic, intersectional
+from src.fides.causal import CausalDAG
 from src.fides.condition_5_model_behavior import compute_condition_5
+from src.fides.baselines import GapAnalysisBaseline, StratifiedGapPowerBaseline, FairlearnBaseline
 
-# Configuration
-COHORT_DIR = Path(__file__).parent.parent / "results" / "disease_cohorts"
+COHORT_DIR = Path(__file__).parent.parent / "data" / "disease_cohorts"
 RESULTS_DIR = Path(__file__).parent.parent / "results"
-FIGURES_DIR = RESULTS_DIR / "figures"
-FIGURES_DIR.mkdir(exist_ok=True)
+RESULTS_DIR.mkdir(exist_ok=True)
 
-DISEASES = {
-    "cardiac": {"file": "cardiac_cohort.csv", "outcome": "mortality", "severity": "ef_percent"},
-    "sepsis": {"file": "sepsis_cohort.csv", "outcome": "mortality", "severity": "sirs_criteria"},
-    "pneumonia": {"file": "pneumonia_cohort.csv", "outcome": "mortality", "severity": "pao2_fio2"},
-    "aki": {"file": "aki_cohort.csv", "outcome": "mortality", "severity": "aki_stage"},
-    "readmission": {"file": "readmission_cohort.csv", "outcome": "readmitted", "severity": "los_days"},
+DEMOGRAPHIC_COLS = ["race", "sex", "insurance", "age_group"]
+
+# Diseases with real guideline-based C5 test scenarios (see clinical_scenarios.py)
+C5_SCENARIO_MAP = {
+    "ami": "cardiac",
+    "sepsis": "sepsis",
+    "pneumonia": "pneumonia",
 }
-
-# Try to find cardiac cohort
-DISEASE_FILES = {
-    "cardiac": ["cardiac_cohort.csv", "readmission_cohort.csv"],  # Use readmission as cardiac proxy if needed
-    "sepsis": ["sepsis_cohort.csv"],
-    "pneumonia": ["pneumonia_cohort.csv"],
-    "aki": ["aki_cohort.csv"],
-    "readmission": ["readmission_cohort.csv"],
-    "stroke": ["stroke_cohort.csv"],
-}
-
-DEMOGRAPHICS = ["race", "insurance", "sex", "age"]
+C5_VALID_RACES = {"White", "Black", "Asian", "Hispanic"}
 
 
-def find_cohort_file(disease: str) -> Path:
-    """Find cohort file for disease."""
-    for filename in DISEASE_FILES.get(disease, []):
-        path = COHORT_DIR / filename
-        if path.exists():
-            return path
-    # Try any matching file
-    for f in COHORT_DIR.glob("*.csv"):
-        if disease.lower() in f.name.lower():
-            return f
-    raise FileNotFoundError(f"No cohort file found for {disease}")
-
-
-def load_cohorts() -> Dict[str, pd.DataFrame]:
-    """Load all disease cohorts."""
-    print("\n" + "="*80)
-    print("PHASE 1: LOADING DISEASE COHORTS")
-    print("="*80)
-
+def load_cohorts() -> dict:
+    """Load every real cohort CSV in data/disease_cohorts/."""
     cohorts = {}
-    for disease in DISEASE_FILES.keys():
-        try:
-            path = find_cohort_file(disease)
-            df = pd.read_csv(path)
-            cohorts[disease] = df
-            print(f"✓ {disease:15s} | {len(df):,} admissions | {df.shape[1]} features")
-        except FileNotFoundError as e:
-            print(f"✗ {disease:15s} | NOT FOUND")
-
+    for path in sorted(COHORT_DIR.glob("*_cohort.csv")):
+        disease = path.stem.replace("_cohort", "")
+        df = pd.read_csv(path)
+        df["age_group"] = pd.cut(
+            df["age"], bins=[0, 40, 65, 200], labels=["<40", "40-65", ">65"]
+        ).astype(str)
+        cohorts[disease] = df
+        print(f"  loaded {disease:22s} n={len(df):,}")
     return cohorts
 
 
-def validate_cohort(df: pd.DataFrame, disease: str) -> bool:
-    """Validate cohort has required columns."""
-    required_demographics = {"race", "insurance", "sex", "age"}
-    available_demo = set(col.lower() for col in df.columns)
+def build_causal_dag(df: pd.DataFrame) -> tuple:
+    """
+    Build a real causal DAG for C2 using only columns present in the data.
 
-    # Check for at least some demographics
-    has_demos = len(required_demographics & available_demo) >= 2
+    race_binary -> comorbidities -> mortality   (legitimate clinical pathway)
+    race_binary -> insurance_binary -> mortality (potential structural bias)
+    race_binary -> mortality                     (direct/unexplained)
 
-    if has_demos:
-        return True
-    else:
-        print(f"  ⚠ {disease}: Missing demographic columns")
-        return False
+    Returns (dag, mediators_by_path, dataframe_with_binary_cols).
+    """
+    df = df.copy()
+    df["race_binary"] = (df["race"] == "White").astype(int)
+    df["insurance_binary"] = (df["insurance"] == "Private").astype(int)
 
-
-def run_fides_on_cohort(df: pd.DataFrame, disease: str, demographic_col: str) -> Dict:
-    """Run FIDES 5-Condition on a cohort for a demographic."""
-
-    # Prepare data
-    outcome_col = "mortality" if "mortality" in df.columns else (
-        "readmitted" if "readmitted" in df.columns else df.columns[-1]
+    dag = CausalDAG(
+        edges=[
+            ("race_binary", "comorbidities"),
+            ("comorbidities", "mortality"),
+            ("race_binary", "insurance_binary"),
+            ("insurance_binary", "mortality"),
+            ("race_binary", "mortality"),
+        ],
+        nodes=["race_binary", "comorbidities", "insurance_binary", "mortality"],
     )
+    # path 0: race->comorbidities->mortality (legitimate clinical pathway)
+    # path 1: race->insurance->mortality (structural, not clinical)
+    # path 2: race->mortality direct (unexplained)
+    mediators_by_path = {0: ["comorbidities"], 1: [], 2: []}
+    return dag, mediators_by_path, df
 
-    # Ensure outcome is binary
-    if outcome_col in df.columns:
-        df[outcome_col] = (df[outcome_col].astype(float) > 0.5).astype(int)
-    else:
-        return {"error": f"Outcome column '{outcome_col}' not found"}
 
-    # Initialize certifier with Condition 5
-    certifier = FIDESCertifier(
-        dataset=df,
-        demographic_cols=[demographic_col],
-        outcome_col=outcome_col,
-        dataset_name=f"{disease}_{demographic_col}",
-        disease=disease,
-        enable_condition_5=True,
-        use_mock_fm=True  # Mock FM for speed
-    )
-
-    # Run certification
-    report = certifier.certify()
-
-    # Extract condition scores
+def run_condition_1_to_4(df: pd.DataFrame, disease: str, demographic_col: str) -> dict:
+    """
+    Run C1 (representation), C3 (phenotypic), C4 (power) directly on
+    `demographic_col`. C2 (causal) always uses a binarized race column
+    internally (see build_causal_dag) since the PSCE implementation is only
+    statistically valid for a 2-category protected attribute; it is reported
+    once per disease regardless of which demographic_col this call is for,
+    and only actually computed when demographic_col == "race".
+    """
     scores = {}
-    for cond_name, cond_result in report.certifications.items():
-        # Simple scoring: pass=0.75, fail=0.25 (then refined)
-        scores[cond_name] = 0.75 if cond_result.passes else 0.25
+    findings = {}
+
+    # C1: Representational sufficiency
+    rep_gaps = representational.compute_representation_gaps(df, demographic_col)
+    scores["representational_sufficiency"] = float(all(g.passes for g in rep_gaps.values()))
+    findings["representational_sufficiency"] = representational.representation_report(rep_gaps)
+
+    # C2: Causal sufficiency (race only, binarized — see module docstring)
+    if demographic_col == "race":
+        dag, mediators_by_path, df_bin = build_causal_dag(df)
+        try:
+            psce = causal.compute_psce(df_bin, dag, "race_binary", "mortality", mediators_by_path)
+            c2_passes = psce["illegitimate_strength"] < 0.2
+            scores["care_pathway_sufficiency"] = float(c2_passes)
+            findings["care_pathway_sufficiency"] = (
+                f"Total effect (unadjusted): {psce['total_effect']:.4f}, "
+                f"direct effect (adjusted for {psce['legitimate_mediators']}): {psce['direct_effect']:.4f}, "
+                f"illegitimate pathway strength: {psce['illegitimate_strength']:.1%} "
+                f"(White vs. all-other-races binary comparison; comorbidities is the only "
+                f"mediator treated as legitimate/clinical)"
+            )
+        except Exception as e:
+            findings["care_pathway_sufficiency"] = f"NOT COMPUTED: {e}"
+
+    # C3: Phenotypic coverage (real severity proxy: comorbidity count)
+    pheno = phenotypic.compute_coverage(df, demographic_col, "comorbidities")
+    scores["phenotypic_coverage_sufficiency"] = float(all(c.passes for c in pheno.values()))
+    findings["phenotypic_coverage_sufficiency"] = phenotypic.phenotypic_report(pheno)
+
+    # C4: Intersectional power
+    power = intersectional.compute_power_matrix(df, [demographic_col], "mortality", test_type="chi-squared")
+    scores["intersectional_sufficiency"] = float(all(p.passes for p in power.values()))
+    findings["intersectional_sufficiency"] = intersectional.insufficiency_report(power)
+
+    overall_passes = all(bool(v) for v in scores.values())
 
     return {
         "disease": disease,
         "demographic": demographic_col,
+        "conditions_computed": list(scores.keys()),
         "condition_scores": scores,
-        "overall_passes": report.overall_passes,
-        "findings": {k: v.findings for k, v in report.certifications.items()},
-        "cds_score": np.mean(list(scores.values())),
+        "overall_passes": overall_passes,
+        "findings": findings,
     }
 
 
-def compute_baseline_scores(df: pd.DataFrame, demographic_col: str, outcome_col: str) -> Dict:
-    """Compute baseline method scores."""
-    try:
-        # Gap Analysis
-        gap_baseline = GapAnalysisBaseline()
-        gap_result = gap_baseline.analyze(df, demographic_col, outcome_col)
-        gap_fails = 1 if gap_result.get("overall_bias_detected", False) else 0
+C5_MODELS = [
+    {"backend": "ollama", "model_name": "mistral"},
+    {"backend": "openai", "model_name": "gpt-4o-mini"},
+]
 
-        # Stratified Gap + Power
-        power_baseline = StratifiedGapPowerBaseline()
-        power_result = power_baseline.analyze(df, demographic_col, outcome_col)
-        power_fails = 1 if power_result.get("overall_bias_detected", False) else 0
 
-        # Fairlearn
-        fairlearn_baseline = FairlearnBaseline()
-        fairlearn_result = fairlearn_baseline.analyze(df, demographic_col, outcome_col)
-        fairlearn_fails = 1 if fairlearn_result.get("unfair", False) else 0
+def run_condition_5(df: pd.DataFrame, disease: str) -> dict:
+    """Run C5 for diseases with real test scenarios, across all configured real FMs."""
+    scenario_disease = C5_SCENARIO_MAP.get(disease)
+    if scenario_disease is None:
+        return {"skipped": True, "reason": "no real guideline scenarios defined for this disease"}
 
-        return {
-            "gap_analysis": gap_fails,
-            "stratified_gap_power": power_fails,
-            "fairlearn": fairlearn_fails,
-        }
-    except Exception:
-        return {"gap_analysis": 0, "stratified_gap_power": 0, "fairlearn": 0}
+    df_valid = df[df["race"].isin(C5_VALID_RACES)]
+    if df_valid["race"].nunique() < 2:
+        return {"skipped": True, "reason": "fewer than 2 valid race groups present"}
+
+    by_model = {}
+    for cfg in C5_MODELS:
+        key = f"{cfg['backend']}:{cfg['model_name']}"
+        try:
+            c5_score, result = compute_condition_5(
+                df_valid, scenario_disease, "race",
+                model_name=cfg["model_name"], backend=cfg["backend"]
+            )
+            by_model[key] = {
+                "c5_score": c5_score,
+                "escalation_rates": result.escalation_rates,
+                "max_gap": result.max_gap,
+                "passes": result.passes,
+                "recommendation": result.recommendation,
+            }
+        except Exception as e:
+            by_model[key] = {"error": str(e)}
+
+    return {"skipped": False, "by_model": by_model}
+
+
+def run_baselines(df: pd.DataFrame, demographic_col: str) -> dict:
+    """Run real baseline methods for comparison."""
+    gap = GapAnalysisBaseline().analyze(df, demographic_col, "mortality")
+    power = StratifiedGapPowerBaseline().analyze(df, demographic_col, "mortality")
+    fairlearn = FairlearnBaseline().analyze(df, demographic_col, "mortality")
+    return {
+        "gap_analysis_fails": not gap["passes"],
+        "stratified_power_fails": not power["passes"],
+        "fairlearn_fails": not fairlearn["passes"],
+    }
 
 
 def main():
-    """Run complete FIDES 5-Condition pipeline."""
+    print("=" * 80)
+    print("FIDES VALIDATION — REAL DATA, REAL COMPUTATION, REAL FM (Ollama/mistral)")
+    print("=" * 80)
 
-    print("\n" + "="*80)
-    print("FIDES 5-CONDITION AAAI 2027 - COMPLETE PIPELINE")
-    print("="*80)
-
-    # Load cohorts
+    print("\nLoading real MIMIC-IV cohorts:")
     cohorts = load_cohorts()
-
-    if not cohorts:
-        print("\n✗ No cohorts loaded. Exiting.")
-        return
-
-    # Run FIDES on all cohorts × demographics
-    print("\n" + "="*80)
-    print("PHASE 2: RUNNING FIDES 5-CONDITION")
-    print("="*80)
 
     results = {}
     baseline_results = {}
+    c5_results = {}
 
+    print("\nRunning C1/C2/C3/C4 across cohorts x demographics:")
     for disease, df in cohorts.items():
-        print(f"\n📊 {disease.upper()}")
         results[disease] = {}
         baseline_results[disease] = {}
 
-        # Validate cohort
-        if not validate_cohort(df, disease):
-            continue
+        for demo_col in DEMOGRAPHIC_COLS:
+            if demo_col not in df.columns:
+                continue
+            if df[demo_col].nunique() < 2:
+                continue
 
-        # Get demographics present in this cohort
-        demographics_to_test = [d for d in DEMOGRAPHICS if d.lower() in df.columns]
-        if not demographics_to_test:
-            print(f"  ⚠ No demographics found in {disease}")
-            demographics_to_test = ["race"]  # Fallback
-
-        for demographic in demographics_to_test:
             try:
-                # Match column name in dataframe
-                demo_col = [c for c in df.columns if demographic.lower() in c.lower()][0] if [c for c in df.columns if demographic.lower() in c.lower()] else demographic
+                result = run_condition_1_to_4(df, disease, demo_col)
+                results[disease][demo_col] = result
+                baseline_results[disease][demo_col] = run_baselines(df, demo_col)
 
-                # Run FIDES
-                result = run_fides_on_cohort(df, disease, demo_col)
-                if "error" not in result:
-                    results[disease][demographic] = result
-                    print(f"  ✓ {demographic:15s} | CDS: {result['cds_score']:.3f} | {'PASS' if result['cds_score'] >= 0.75 else 'FAIL'}")
+                computed_scores = result["condition_scores"]
+                if computed_scores:
+                    cds = np.mean(list(computed_scores.values()))
+                    status = "PASS" if result["overall_passes"] else "FAIL"
+                    print(
+                        f"  {disease:22s} x {demo_col:10s} | "
+                        f"conditions={list(computed_scores.keys())} | "
+                        f"CDS={cds:.3f} | {status}"
+                    )
                 else:
-                    print(f"  ✗ {demographic:15s} | {result['error']}")
+                    print(f"  {disease:22s} x {demo_col:10s} | no conditions computed")
             except Exception as e:
-                print(f"  ✗ {demographic:15s} | Error: {str(e)[:50]}")
+                print(f"  {disease:22s} x {demo_col:10s} | ERROR: {str(e)[:80]}")
 
-    # Save results
-    print("\n" + "="*80)
-    print("PHASE 3: SAVING RESULTS")
-    print("="*80)
+    print("\nRunning C5 (real Ollama + real OpenAI inference) on diseases with real scenarios:")
+    for disease, df in cohorts.items():
+        c5_result = run_condition_5(df, disease)
+        c5_results[disease] = c5_result
+        if c5_result.get("skipped"):
+            print(f"  {disease:22s} | SKIPPED ({c5_result['reason']})")
+        else:
+            for model_key, model_result in c5_result["by_model"].items():
+                if "error" in model_result:
+                    print(f"  {disease:22s} | {model_key:20s} | ERROR: {model_result['error'][:60]}")
+                else:
+                    print(
+                        f"  {disease:22s} | {model_key:20s} | "
+                        f"C5={model_result['c5_score']:.3f} | "
+                        f"max_gap={model_result['max_gap']:.1%} | "
+                        f"{'PASS' if model_result['passes'] else 'FAIL'}"
+                    )
 
-    results_file = RESULTS_DIR / "fides_5_condition_results.json"
-    with open(results_file, "w") as f:
+    print("\nSaving results...")
+    with open(RESULTS_DIR / "fides_c1_c4_results.json", "w") as f:
         json.dump(results, f, indent=2, default=str)
-    print(f"✓ Results saved to {results_file}")
+    with open(RESULTS_DIR / "fides_c5_results.json", "w") as f:
+        json.dump(c5_results, f, indent=2, default=str)
+    with open(RESULTS_DIR / "baseline_comparison_results.json", "w") as f:
+        json.dump(baseline_results, f, indent=2, default=str)
 
-    # Generate summary statistics
-    print("\n" + "="*80)
-    print("SUMMARY STATISTICS")
-    print("="*80)
+    print(f"✓ Saved to {RESULTS_DIR}/fides_c1_c4_results.json")
+    print(f"✓ Saved to {RESULTS_DIR}/fides_c5_results.json")
+    print(f"✓ Saved to {RESULTS_DIR}/baseline_comparison_results.json")
 
-    all_scores = []
-    fail_count = 0
-    for disease_results in results.values():
-        for result in disease_results.values():
-            if "cds_score" in result:
-                all_scores.append(result["cds_score"])
-                if result["cds_score"] < 0.75:
-                    fail_count += 1
+    print("\n" + "=" * 80)
+    print("DONE")
+    print("=" * 80)
 
-    if all_scores:
-        print(f"\nTotal validations: {len(all_scores)}")
-        print(f"Mean CDS: {np.mean(all_scores):.3f}")
-        print(f"Median CDS: {np.median(all_scores):.3f}")
-        print(f"Failure rate: {fail_count}/{len(all_scores)} ({100*fail_count/len(all_scores):.1f}%)")
-        print(f"Score range: [{min(all_scores):.3f}, {max(all_scores):.3f}]")
-
-        # Find wow findings
-        wow_findings = []
-        for disease, disease_results in results.items():
-            for demo, result in disease_results.items():
-                if result.get("cds_score", 0) < 0.75:
-                    wow_findings.append(f"{disease}/{demo}: CDS={result['cds_score']:.3f}")
-
-        if wow_findings:
-            print(f"\n⭐ WOW FINDINGS (Failed FIDES but may pass baselines):")
-            for finding in wow_findings[:5]:
-                print(f"  • {finding}")
-
-    print("\n✓ Pipeline complete!")
-    return results
+    return results, c5_results, baseline_results
 
 
 if __name__ == "__main__":
-    results = main()
+    main()

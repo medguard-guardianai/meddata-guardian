@@ -1,0 +1,244 @@
+{
+  "aki": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    }
+  },
+  "ami": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    }
+  },
+  "ards": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    }
+  },
+  "copd": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": false
+    }
+  },
+  "diabetic_complication": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": false
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": false
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": false
+    }
+  },
+  "heart_failure": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    }
+  },
+  "hemorrhagic_stroke": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    }
+  },
+  "ischemic_stroke": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    }
+  },
+  "pneumonia": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    }
+  },
+  "sepsis": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    }
+  },
+  "vte": {
+    "race": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "sex": {
+      "gap_analysis_fails": false,
+      "stratified_power_fails": false,
+      "fairlearn_fails": false
+    },
+    "insurance": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": true
+    },
+    "age_group": {
+      "gap_analysis_fails": true,
+      "stratified_power_fails": true,
+      "fairlearn_fails": false
+    }
+  }
+}

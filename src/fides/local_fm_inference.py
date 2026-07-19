@@ -1,81 +1,69 @@
 """
 Local Foundation Model Inference for FIDES Condition 5
 
-Runs clinical foundation models (Meditron, BioMistral) locally using vLLM.
-No data transmission, HIPAA-compliant.
+Runs a real local clinical FM (via Ollama) for demographic bias testing.
+No data transmission, HIPAA-compliant. There is no mock/fake response path:
+if the model can't be reached, this raises rather than fabricating output.
 """
 
-import json
-from typing import List, Dict, Optional
-import warnings
-
-# Try to import vLLM, fallback to mock if not available
-try:
-    from vllm import LLM, SamplingParams
-    VLLM_AVAILABLE = True
-except ImportError:
-    VLLM_AVAILABLE = False
-    warnings.warn("vLLM not installed. Using mock FM for testing. Install with: pip install vllm")
+import requests
+from typing import List, Dict
 
 
 class LocalFMInference:
     """
-    Wrapper for running clinical FMs locally with vLLM.
+    Wrapper for running FMs locally via Ollama (http://localhost:11434).
 
-    Supports:
-    - Meditron 7B (best for clinical text)
-    - BioMistral 7B
-
-    Zero data transmission - runs entirely locally.
+    Zero data transmission - runs entirely locally. Requires Ollama running
+    with the requested model pulled (e.g., `ollama run mistral`).
     """
 
     def __init__(
         self,
-        model_name: str = "meta-llama/Llama-2-7b-hf",
-        use_mock: bool = False,
-        gpu_memory_utilization: float = 0.8,
-        tensor_parallel_size: int = 1
+        model_name: str = "mistral",
+        base_url: str = "http://localhost:11434",
+        timeout: int = 120,
     ):
         """
         Initialize local FM.
 
         Args:
-            model_name: Model ID (e.g., "meta-llama/Llama-2-7b-hf")
-            use_mock: If True, use mock responses (for testing without GPU)
-            gpu_memory_utilization: GPU memory utilization (0-1)
-            tensor_parallel_size: Number of GPUs for tensor parallelism
+            model_name: Ollama model tag (e.g., "mistral")
+            base_url: Ollama server URL
+            timeout: Request timeout in seconds
         """
         self.model_name = model_name
-        self.use_mock = use_mock or not VLLM_AVAILABLE
-        self.gpu_memory_utilization = gpu_memory_utilization
-        self.tensor_parallel_size = tensor_parallel_size
-        self.model = None
+        self.base_url = base_url
+        self.timeout = timeout
+        self._verify_available()
 
-        if not self.use_mock:
-            self._init_vllm()
-
-    def _init_vllm(self):
-        """Initialize vLLM engine."""
+    def _verify_available(self):
+        """Verify Ollama is reachable and the model is pulled. Raises if not."""
         try:
-            self.model = LLM(
-                model=self.model_name,
-                gpu_memory_utilization=self.gpu_memory_utilization,
-                tensor_parallel_size=self.tensor_parallel_size,
-                trust_remote_code=True
+            resp = requests.get(f"{self.base_url}/api/tags", timeout=10)
+            resp.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise ConnectionError(
+                f"Cannot reach Ollama at {self.base_url}. "
+                f"Start it with `ollama serve` and pull a model with `ollama run {self.model_name}`."
+            ) from e
+
+        available = [m["name"].split(":")[0] for m in resp.json().get("models", [])]
+        if self.model_name not in available:
+            raise RuntimeError(
+                f"Model '{self.model_name}' not found in Ollama. "
+                f"Available: {available}. Pull it with `ollama run {self.model_name}`."
             )
-        except Exception as e:
-            warnings.warn(f"Failed to load vLLM: {e}. Using mock FM.")
-            self.use_mock = True
 
     def generate(
         self,
         prompt: str,
-        max_tokens: int = 100,
+        max_tokens: int = 150,
         temperature: float = 0.3,
         top_p: float = 0.9
     ) -> str:
         """
-        Generate completion from FM.
+        Generate a real completion from the local FM via Ollama.
 
         Args:
             prompt: Input prompt
@@ -85,66 +73,38 @@ class LocalFMInference:
 
         Returns:
             Generated text
-        """
-        if self.use_mock:
-            return self._mock_generation(prompt)
 
+        Raises:
+            RuntimeError: if the Ollama call fails (no fallback to fake output)
+        """
         try:
-            sampling_params = SamplingParams(
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
-                stop=["\\n\\n", "[END]"]
+            resp = requests.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model_name,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": temperature,
+                        "top_p": top_p,
+                        "num_predict": max_tokens,
+                    },
+                },
+                timeout=self.timeout,
             )
-
-            outputs = self.model.generate([prompt], sampling_params)
-            return outputs[0].outputs[0].text.strip()
-        except Exception as e:
-            warnings.warn(f"Generation failed: {e}. Using mock response.")
-            return self._mock_generation(prompt)
-
-    def _mock_generation(self, prompt: str) -> str:
-        """
-        Mock generation for testing without GPU.
-        Simulates realistic clinical FM responses.
-        """
-        # Deterministic mock based on prompt content
-        if "Black" in prompt or "African" in prompt:
-            if "ICU" in prompt:
-                return "No. The patient's presentation does not warrant ICU monitoring."
-            elif "intervention" in prompt or "catheterization" in prompt:
-                return "No. Current management with medical therapy is appropriate."
-            else:
-                return "Supportive care and monitoring."
-
-        elif "White" in prompt or "Caucasian" in prompt:
-            if "ICU" in prompt:
-                return "Yes. ICU admission recommended for continuous monitoring."
-            elif "intervention" in prompt or "catheterization" in prompt:
-                return "Yes. Recommend cardiac catheterization for revascularization assessment."
-            else:
-                return "Consider intensive management and intervention."
-
-        elif "Asian" in prompt:
-            if "ICU" in prompt:
-                return "Yes. ICU admission advisable given severity indicators."
-            else:
-                return "Recommend hospital admission with close monitoring."
-
-        else:
-            if "ICU" in prompt:
-                return "Yes. ICU care recommended."
-            else:
-                return "Recommend hospital admission."
+            resp.raise_for_status()
+            return resp.json().get("response", "").strip()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Ollama generation failed: {e}") from e
 
     def batch_generate(
         self,
         prompts: List[str],
-        max_tokens: int = 100,
+        max_tokens: int = 150,
         temperature: float = 0.3
     ) -> List[str]:
         """
-        Generate completions for multiple prompts.
+        Generate completions for multiple prompts sequentially.
 
         Args:
             prompts: List of prompts
@@ -152,23 +112,9 @@ class LocalFMInference:
             temperature: Sampling temperature
 
         Returns:
-            List of generated texts
+            List of generated texts (real model output, one per prompt)
         """
-        if self.use_mock:
-            return [self._mock_generation(p) for p in prompts]
-
-        try:
-            sampling_params = SamplingParams(
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stop=["\\n\\n", "[END]"]
-            )
-
-            outputs = self.model.generate(prompts, sampling_params)
-            return [out.outputs[0].text.strip() for out in outputs]
-        except Exception as e:
-            warnings.warn(f"Batch generation failed: {e}. Using mock responses.")
-            return [self._mock_generation(p) for p in prompts]
+        return [self.generate(p, max_tokens=max_tokens, temperature=temperature) for p in prompts]
 
 
 class ClinicalFMBiasDetector:

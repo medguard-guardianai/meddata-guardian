@@ -70,122 +70,83 @@ def compute_psce(
     mediators_by_path: Optional[Dict[int, List[str]]] = None
 ) -> Dict:
     """
-    Compute path-specific causal effects for outcome gaps.
+    Decompose the total effect of a protected attribute on an outcome into
+    a portion explained by legitimate clinical mediators and a leftover
+    ("illegitimate") portion, using the classic difference-in-coefficients
+    mediation method (Vanderweele & Vansteelandt 2013):
 
-    This function decomposes the total causal effect of a protected attribute
-    on an outcome into path-specific effects, separating legitimate (clinical)
-    from illegitimate (race-mediated) pathways.
+        total_effect    = coefficient of protected_attr in: outcome ~ protected_attr
+        direct_effect   = coefficient of protected_attr in: outcome ~ protected_attr + legitimate_mediators
+        illegitimate_strength = direct_effect / total_effect
+
+    `protected_attr` must be a binary (0/1) column — encode multi-category
+    attributes (e.g. race) into a binary contrast (e.g. majority vs. rest)
+    before calling this, since a multi-category regressor has no single
+    coefficient with a well-defined direction.
+
+    Legitimate mediators are the union of `mediators_by_path` entries in
+    the DAG whose path is marked legitimate; all other paths' mediators are
+    ignored for the adjustment (their effect stays folded into the leftover).
 
     Args:
         df: Input dataframe with all variables
-        dag: Causal DAG specifying relationships
-        protected_attr: Protected attribute column (e.g., 'race')
+        dag: Causal DAG specifying relationships (used only to enumerate
+            paths and label them legitimate/illegitimate via mediators_by_path)
+        protected_attr: Binary (0/1) protected attribute column
         outcome_col: Outcome column name
-        mediators_by_path: Dict mapping path index to list of mediators on that path
+        mediators_by_path: Dict mapping path index -> list of mediator names
+            that make that path "legitimate" if present on it. A path with
+            an empty list here is treated as illegitimate/unadjusted.
 
     Returns:
-        Dictionary with path-specific effects and decomposition
-
-    Example:
-        >>> dag = CausalDAG(
-        ...     edges=[('race', 'pain'), ('pain', 'action'), ('action', 'outcome')],
-        ...     nodes=['race', 'pain', 'action', 'outcome']
-        ... )
-        >>> results = compute_psce(df, dag, 'race', 'outcome')
-        >>> print(results['illegitimate_pathway_strength'])
-        0.82  # 82% of race→outcome flows through illegitimate pain path
+        Dict with total_effect, direct_effect, illegitimate_strength,
+        and the path enumeration for transparency.
     """
+    if df[protected_attr].nunique() != 2:
+        raise ValueError(
+            f"compute_psce requires a binary protected_attr; "
+            f"'{protected_attr}' has {df[protected_attr].nunique()} categories"
+        )
 
-    # Find all paths from protected attr to outcome
     paths = dag.paths_from_to(protected_attr, outcome_col)
-
     if not paths:
         raise ValueError(f"No paths found from {protected_attr} to {outcome_col} in DAG")
 
-    results = {
-        'total_effect': None,
-        'path_effects': {},
-        'illegitimate_strength': None,
-        'confidence_intervals': {}
+    x = df[protected_attr].astype(float).values
+    y = df[outcome_col].astype(float).values
+
+    # Total effect: simple regression of outcome on protected_attr alone
+    total_effect = float(np.polyfit(x, y, 1)[0])
+
+    # Legitimate mediators = union of mediators on paths marked legitimate
+    legitimate_mediators = []
+    if mediators_by_path:
+        for path_idx, path in enumerate(paths):
+            path_mediators = path[1:-1]
+            marked = mediators_by_path.get(path_idx, [])
+            if any(m in path_mediators for m in marked):
+                legitimate_mediators.extend(m for m in path_mediators if m in marked)
+    legitimate_mediators = sorted(set(legitimate_mediators))
+
+    # Direct effect: regression of outcome on protected_attr + legitimate mediators
+    if legitimate_mediators:
+        design_cols = [protected_attr] + legitimate_mediators
+        X = df[design_cols].astype(float).values
+        X = np.column_stack([np.ones(len(X)), X])
+        coeffs, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+        direct_effect = float(coeffs[1])  # coefficient on protected_attr, index 0 is intercept
+    else:
+        direct_effect = total_effect  # nothing legitimate to adjust for
+
+    illegitimate_strength = direct_effect / total_effect if total_effect != 0 else 0.0
+
+    return {
+        'total_effect': total_effect,
+        'direct_effect': direct_effect,
+        'legitimate_mediators': legitimate_mediators,
+        'illegitimate_strength': illegitimate_strength,
+        'paths': [' → '.join(p) for p in paths],
     }
-
-    # Compute total effect: E[Y | protected_attr=1] - E[Y | protected_attr=0]
-    if df[protected_attr].nunique() == 2:
-        group1, group2 = df[protected_attr].unique()
-        total_effect = (
-            df[df[protected_attr] == group1][outcome_col].mean() -
-            df[df[protected_attr] == group2][outcome_col].mean()
-        )
-    else:
-        # For continuous protected attr, use regression coefficient
-        from scipy import stats
-        slope, intercept, r, p, se = stats.linregress(
-            pd.factorize(df[protected_attr])[0],
-            df[outcome_col]
-        )
-        total_effect = slope
-
-    results['total_effect'] = total_effect
-
-    # Compute path-specific effects
-    illegitimate_total = 0
-
-    for path_idx, path in enumerate(paths):
-        # Identify mediators on this path
-        mediators = path[1:-1] if len(path) > 2 else []
-
-        # Simple estimation: proportion of total effect through this path
-        # (Full PSCE requires more sophisticated mediation analysis)
-        if total_effect != 0:
-            # Rough estimate: variance explained by mediators on path
-            path_effect = _estimate_path_effect(df, protected_attr, path, outcome_col)
-            results['path_effects'][f"path_{path_idx}"] = {
-                'path': ' → '.join(path),
-                'mediators': mediators,
-                'effect': path_effect,
-                'pct_of_total': path_effect / total_effect if total_effect != 0 else 0
-            }
-
-            # Track illegitimate effects (paths through race without clinical mediation)
-            if mediators_by_path and path_idx in mediators_by_path:
-                is_legitimate = any(m in mediators for m in mediators_by_path[path_idx])
-                if not is_legitimate:
-                    illegitimate_total += path_effect
-
-    # Compute strength of illegitimate pathways
-    if total_effect != 0:
-        results['illegitimate_strength'] = illegitimate_total / total_effect
-    else:
-        results['illegitimate_strength'] = 0.0
-
-    return results
-
-
-def _estimate_path_effect(
-    df: pd.DataFrame,
-    protected_attr: str,
-    path: List[str],
-    outcome_col: str
-) -> float:
-    """
-    Estimate the effect size flowing through a specific path.
-
-    Simple implementation: regression coefficient when controlling for
-    mediators not on this path.
-    """
-    from scipy import stats
-
-    # Get all mediators on path except first and last (source and outcome)
-    mediators_on_path = path[1:-1]
-
-    # Compute direct effect through this path
-    X = pd.factorize(df[protected_attr])[0]
-    y = df[outcome_col].values
-
-    # Simple OLS regression
-    slope, _, _, _, _ = stats.linregress(X, y)
-
-    return slope
 
 
 def identify_illegitimate_paths(

@@ -87,7 +87,7 @@ class FIDESCertifier:
         dataset_name: str = "clinical_dataset",
         disease: str = "cardiac",
         enable_condition_5: bool = True,
-        use_mock_fm: bool = True
+        fm_model_name: str = "mistral"
     ):
         """
         Initialize FIDES Certifier.
@@ -102,7 +102,7 @@ class FIDESCertifier:
             dataset_name: Name for the dataset (appears in reports)
             disease: Disease type (cardiac, sepsis, pneumonia, etc.)
             enable_condition_5: Whether to include Condition 5 (model behavior)
-            use_mock_fm: Use mock FM for testing (no GPU needed)
+            fm_model_name: Ollama model tag for Condition 5 testing
         """
         self.dataset = dataset
         self.demographic_cols = demographic_cols
@@ -113,7 +113,7 @@ class FIDESCertifier:
         self.dataset_name = dataset_name
         self.disease = disease
         self.enable_condition_5 = enable_condition_5
-        self.use_mock_fm = use_mock_fm
+        self.fm_model_name = fm_model_name
 
     def certify(self) -> CertificationReport:
         """
@@ -142,7 +142,11 @@ class FIDESCertifier:
         )
 
         # Condition 2: Care Pathway Sufficiency
-        if self.causal_dag:
+        # NOTE: requires an explicit causal_dag. Unlike prior versions of this
+        # code, an absent DAG is NOT treated as a silent pass — it is excluded
+        # from the certification entirely so it can't be mistaken for a real
+        # computed result.
+        if self.causal_dag is not None:
             pathway_results = causal.compute_psce(
                 self.dataset,
                 self.causal_dag,
@@ -156,18 +160,17 @@ class FIDESCertifier:
                 f"  Illegitimate pathway strength: {pathway_results['illegitimate_strength']:.1%}\n"
                 f"  Status: {'PASS - Care pathways are legitimate' if pathway_passes else 'FAIL - Racial bias detected in care pathways'}"
             )
+            certifications['care_pathway_sufficiency'] = CertificationResult(
+                condition_name="Care Pathway Sufficiency",
+                passes=pathway_passes,
+                findings=pathway_findings
+            )
         else:
-            pathway_passes = True  # Cannot test without DAG
-            pathway_findings = "Causal DAG not provided. Care pathway analysis skipped."
-
-        certifications['care_pathway_sufficiency'] = CertificationResult(
-            condition_name="Care Pathway Sufficiency",
-            passes=pathway_passes,
-            findings=pathway_findings
-        )
+            certifications['care_pathway_sufficiency'] = None  # not computed, excluded below
 
         # Condition 3: Phenotypic Coverage Sufficiency
-        if self.severity_col:
+        # Same rule: no severity_col means NOT COMPUTED, not an automatic pass.
+        if self.severity_col is not None:
             pheno_coverage = phenotypic.compute_coverage(
                 self.dataset,
                 self.demographic_cols[0],
@@ -175,15 +178,13 @@ class FIDESCertifier:
             )
             pheno_passes = all(cov.passes for cov in pheno_coverage.values())
             pheno_findings = phenotypic.phenotypic_report(pheno_coverage)
+            certifications['phenotypic_coverage_sufficiency'] = CertificationResult(
+                condition_name="Phenotypic Coverage Sufficiency",
+                passes=pheno_passes,
+                findings=pheno_findings
+            )
         else:
-            pheno_passes = True
-            pheno_findings = "Severity column not provided. Phenotypic coverage analysis skipped."
-
-        certifications['phenotypic_coverage_sufficiency'] = CertificationResult(
-            condition_name="Phenotypic Coverage Sufficiency",
-            passes=pheno_passes,
-            findings=pheno_findings
-        )
+            certifications['phenotypic_coverage_sufficiency'] = None  # not computed, excluded below
 
         # Condition 4: Intersectional Sufficiency & Insufficiency Masking
         inter_power = intersectional.compute_power_matrix(
@@ -215,7 +216,7 @@ class FIDESCertifier:
                     self.dataset,
                     self.disease,
                     demographic_col,
-                    use_mock=self.use_mock_fm
+                    model_name=self.fm_model_name
                 )
                 c5_score_by_demo[demographic_col] = c5_score
 
@@ -240,26 +241,35 @@ class FIDESCertifier:
                 findings=c5_findings
             )
         else:
-            c5_avg_score = 1.0
-            c5_passes = True
+            certifications['model_behavior_sufficiency'] = None  # not computed, excluded below
 
-        # Overall certification
-        overall_passes = all(c.passes for c in certifications.values())
+        # Drop conditions that weren't actually computed (no causal_dag,
+        # no severity_col, or C5 disabled) instead of silently counting them
+        # as passing.
+        computed = {name: c for name, c in certifications.items() if c is not None}
+        skipped = [name for name, c in certifications.items() if c is None]
+
+        # Overall certification is only meaningful over conditions actually computed
+        overall_passes = all(c.passes for c in computed.values()) if computed else False
 
         # Generate recommendation
+        skip_note = f"\n(Not computed — missing required inputs: {', '.join(skipped)})" if skipped else ""
         if overall_passes:
             recommendation = (
-                "✓ Dataset PASSES all sufficiency conditions. "
-                "Safe to proceed with training."
+                "✓ Dataset PASSES all computed sufficiency conditions. "
+                f"Safe to proceed with training.{skip_note}"
             )
         else:
-            failed_conditions = [name for name, c in certifications.items() if not c.passes]
+            failed_conditions = [name for name, c in computed.items() if not c.passes]
             recommendation = (
                 f"✗ Dataset FAILS {len(failed_conditions)} condition(s):\n"
                 f"  • {', '.join(failed_conditions)}\n"
                 f"\nDO NOT TRAIN on this dataset. "
                 f"Address the failing conditions before resubmission."
+                f"{skip_note}"
             )
+
+        certifications = computed
 
         insufficiency_summary = ""
         if insufficiency_detected:
