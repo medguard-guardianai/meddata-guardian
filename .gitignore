@@ -16,3 +16,17 @@ __pycache__/
 venv/
 env/
 ENV/
+
+# Raw MIMIC-IV data: credentialed PhysioNet access data (DUA-restricted) and
+# ~10GB per copy with individual files over GitHub's 100MB hard limit.
+# Cannot be pushed under any circumstances - keep locally only.
+data/mimic-iv-3.1/
+data/mimic-iv-full/
+
+# Contains real subject_id/hadm_id linked to demographics - patient-level
+# data derived from the DUA-restricted MIMIC-IV dataset. Same redistribution
+# restriction as the raw files above applies to derived extracts.
+results/mimic_full/
+
+# Local tool config, not project code (same category as .vscode/.idea above)
+.claude/

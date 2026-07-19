@@ -98,8 +98,12 @@ def build_cohort(
     cohort["admission_type"] = cohort["admission_type"].fillna("Unknown")
 
     cohort = cohort.rename(columns={"gender": "sex", "anchor_age": "age"})
+    # Deliberately exclude subject_id/hadm_id from the saved output: they are
+    # real MIMIC-IV patient/admission identifiers under a PhysioNet Data Use
+    # Agreement, and no FIDES condition needs them — every computation here
+    # only ever uses race/sex/age/insurance/mortality/comorbidities/los_days.
     cohort = cohort[[
-        "subject_id", "hadm_id", "race", "sex", "age", "insurance",
+        "race", "sex", "age", "insurance",
         "admission_type", "mortality", "comorbidities", "los_days",
     ]].reset_index(drop=True)
 
