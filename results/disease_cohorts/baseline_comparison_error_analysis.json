@@ -1,0 +1,147 @@
+{
+  "comparison": {
+    "aki": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "ami": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "ards": {
+      "gap_analysis": 0,
+      "power_analysis": 0,
+      "fairlearn": 0,
+      "fides": 0
+    },
+    "cardiac": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "copd": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "diabetic_complication": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "eicu_cardiovascular": {
+      "gap_analysis": 0,
+      "power_analysis": 0,
+      "fairlearn": 0,
+      "fides": 0
+    },
+    "eicu_gastrointestinal": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "eicu_respiratory": {
+      "gap_analysis": 0,
+      "power_analysis": 0,
+      "fairlearn": 0,
+      "fides": 0
+    },
+    "eicu_sepsis": {
+      "gap_analysis": 0,
+      "power_analysis": 0,
+      "fairlearn": 0,
+      "fides": 0
+    },
+    "eicu_trauma": {
+      "gap_analysis": 0,
+      "power_analysis": 0,
+      "fairlearn": 0,
+      "fides": 0
+    },
+    "heart_failure": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "hemorrhagic_stroke": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "ischemic_stroke": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "pneumonia": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "sepsis": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "stroke": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    },
+    "vte": {
+      "gap_analysis": 1,
+      "power_analysis": 0,
+      "fairlearn": 1,
+      "fides": 0
+    }
+  },
+  "error_analysis": {
+    "true_positives": [],
+    "false_positives": [
+      "aki",
+      "ami",
+      "cardiac",
+      "copd",
+      "diabetic_complication",
+      "eicu_gastrointestinal",
+      "heart_failure",
+      "hemorrhagic_stroke",
+      "ischemic_stroke",
+      "pneumonia",
+      "sepsis",
+      "stroke",
+      "vte"
+    ],
+    "false_negatives": [],
+    "true_negatives": [
+      "ards",
+      "eicu_cardiovascular",
+      "eicu_respiratory",
+      "eicu_sepsis",
+      "eicu_trauma"
+    ]
+  },
+  "metrics": {
+    "total_datasets": 18,
+    "agreement_rate": 0.278,
+    "disagreement_rate": 0.722,
+    "gap_analysis_fail_rate": 0.722,
+    "power_analysis_fail_rate": 0.0,
+    "fairlearn_fail_rate": 0.722,
+    "fides_fail_rate": 0.0
+  }
+}

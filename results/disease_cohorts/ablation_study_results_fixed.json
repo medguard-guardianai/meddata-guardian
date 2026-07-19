@@ -1,0 +1,158 @@
+{
+  "per_disease": {
+    "cardiac": {
+      "c1_only": {
+        "cds": 0.029,
+        "pass": false
+      },
+      "c1_c2": {
+        "cds": 0.218,
+        "pass": false
+      },
+      "c1_c3": {
+        "cds": 0.362,
+        "pass": false
+      },
+      "c1_c4": {
+        "cds": 0.416,
+        "pass": false
+      },
+      "c1_c5_full": {
+        "cds": 0.453,
+        "pass": false
+      }
+    },
+    "sepsis": {
+      "c1_only": {
+        "cds": 0.046,
+        "pass": false
+      },
+      "c1_c2": {
+        "cds": 0.175,
+        "pass": false
+      },
+      "c1_c3": {
+        "cds": 0.343,
+        "pass": false
+      },
+      "c1_c4": {
+        "cds": 0.407,
+        "pass": false
+      },
+      "c1_c5_full": {
+        "cds": 0.45,
+        "pass": false
+      }
+    },
+    "pneumonia": {
+      "c1_only": {
+        "cds": 0.043,
+        "pass": false
+      },
+      "c1_c2": {
+        "cds": 0.162,
+        "pass": false
+      },
+      "c1_c3": {
+        "cds": 0.315,
+        "pass": false
+      },
+      "c1_c4": {
+        "cds": 0.373,
+        "pass": false
+      },
+      "c1_c5_full": {
+        "cds": 0.415,
+        "pass": false
+      }
+    },
+    "aki": {
+      "c1_only": {
+        "cds": 0.037,
+        "pass": false
+      },
+      "c1_c2": {
+        "cds": 0.286,
+        "pass": false
+      },
+      "c1_c3": {
+        "cds": 0.424,
+        "pass": false
+      },
+      "c1_c4": {
+        "cds": 0.473,
+        "pass": false
+      },
+      "c1_c5_full": {
+        "cds": 0.506,
+        "pass": false
+      }
+    },
+    "stroke": {
+      "c1_only": {
+        "cds": 0.042,
+        "pass": false
+      },
+      "c1_c2": {
+        "cds": 0.381,
+        "pass": false
+      },
+      "c1_c3": {
+        "cds": 0.504,
+        "pass": false
+      },
+      "c1_c4": {
+        "cds": 0.548,
+        "pass": false
+      },
+      "c1_c5_full": {
+        "cds": 0.578,
+        "pass": false
+      }
+    }
+  },
+  "detection_rates": {
+    "c1_only": {
+      "failing_datasets": 5,
+      "detection_rate": 1.0
+    },
+    "c1_c2": {
+      "failing_datasets": 5,
+      "detection_rate": 1.0
+    },
+    "c1_c3": {
+      "failing_datasets": 5,
+      "detection_rate": 1.0
+    },
+    "c1_c4": {
+      "failing_datasets": 5,
+      "detection_rate": 1.0
+    },
+    "c1_c5_full": {
+      "failing_datasets": 5,
+      "detection_rate": 1.0
+    }
+  },
+  "incremental_contributions": {
+    "C1": {
+      "incremental": 1.0,
+      "cumulative": 1.0
+    },
+    "C2": {
+      "incremental": 0.0,
+      "cumulative": 1.0
+    },
+    "C3": {
+      "incremental": 0.0,
+      "cumulative": 1.0
+    },
+    "C4": {
+      "incremental": 0.0,
+      "cumulative": 1.0
+    },
+    "C5": {
+      "incremental": 0.0,
+      "cumulative": 1.0
+    }
+  }
+}

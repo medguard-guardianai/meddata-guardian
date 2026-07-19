@@ -1,0 +1,176 @@
+{
+  "enhanced_baselines": {
+    "aki": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=6.2pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.70",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=6.2pp",
+      "all_pass": 0
+    },
+    "ami": {
+      "equalized_odds": 1,
+      "equalized_odds_detail": "gap=3.7pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.69",
+      "parity_difference": 1,
+      "parity_difference_detail": "diff=3.7pp",
+      "all_pass": 0
+    },
+    "ards": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=11.3pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.50",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=11.3pp",
+      "all_pass": 0
+    },
+    "cardiac": {
+      "equalized_odds": 1,
+      "equalized_odds_detail": "gap=3.3pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.74",
+      "parity_difference": 1,
+      "parity_difference_detail": "diff=3.3pp",
+      "all_pass": 0
+    },
+    "copd": {
+      "equalized_odds": 1,
+      "equalized_odds_detail": "gap=1.5pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.78",
+      "parity_difference": 1,
+      "parity_difference_detail": "diff=1.5pp",
+      "all_pass": 0
+    },
+    "diabetic_complication": {
+      "equalized_odds": 1,
+      "equalized_odds_detail": "gap=2.2pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.81",
+      "parity_difference": 1,
+      "parity_difference_detail": "diff=2.2pp",
+      "all_pass": 0
+    },
+    "eicu_cardiovascular": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=12.2pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.59",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=12.2pp",
+      "all_pass": 0
+    },
+    "eicu_gastrointestinal": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=7.3pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.74",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=7.3pp",
+      "all_pass": 0
+    },
+    "eicu_respiratory": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=27.6pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.51",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=27.6pp",
+      "all_pass": 0
+    },
+    "eicu_sepsis": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=18.7pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.51",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=18.7pp",
+      "all_pass": 0
+    },
+    "eicu_trauma": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=16.7pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.59",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=16.7pp",
+      "all_pass": 0
+    },
+    "heart_failure": {
+      "equalized_odds": 1,
+      "equalized_odds_detail": "gap=2.9pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.76",
+      "parity_difference": 1,
+      "parity_difference_detail": "diff=2.9pp",
+      "all_pass": 0
+    },
+    "hemorrhagic_stroke": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=6.5pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.59",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=6.5pp",
+      "all_pass": 0
+    },
+    "ischemic_stroke": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=5.5pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.66",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=5.5pp",
+      "all_pass": 0
+    },
+    "pneumonia": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=5.4pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.69",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=5.4pp",
+      "all_pass": 0
+    },
+    "sepsis": {
+      "equalized_odds": 1,
+      "equalized_odds_detail": "gap=2.3pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.62",
+      "parity_difference": 1,
+      "parity_difference_detail": "diff=2.3pp",
+      "all_pass": 0
+    },
+    "stroke": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=5.5pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.66",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=5.5pp",
+      "all_pass": 0
+    },
+    "vte": {
+      "equalized_odds": 0,
+      "equalized_odds_detail": "gap=7.7pp",
+      "subgroup_accuracy": 0,
+      "subgroup_accuracy_detail": "min_acc=0.68",
+      "parity_difference": 0,
+      "parity_difference_detail": "diff=7.7pp",
+      "all_pass": 0
+    }
+  },
+  "summary": {
+    "total_datasets": 18,
+    "gap_analysis_fail_rate": 0.7222222222222222,
+    "fairlearn_fail_rate": 0.7222222222222222,
+    "equalized_odds_fail_rate": 0.3333333333333333,
+    "subgroup_accuracy_fail_rate": 0.0,
+    "parity_difference_fail_rate": 0.3333333333333333,
+    "power_analysis_fail_rate": 0.0,
+    "fides_fail_rate": 0.0
+  }
+}

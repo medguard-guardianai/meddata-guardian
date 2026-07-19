@@ -1,73 +1,15 @@
-# Python
+# Cache files only
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-*.egg-info/
-dist/
-build/
-node_modules/
-# Jupyter
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-data
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Data
-*.csv
-!data/examples/*.csv
-
-# Outputs
-outputs/*.pdf
-outputs/*.png
-
-# Environment
-.env
-
-# MIMIC / credentials
-cookies.txt
-data/mimic/*.csv.gz
-
-# Old MedGuard files (not part of FIDES)
-backend/
-frontend/
-knowledge_base/
-notebooks/
-scripts/
-src/agents/
-src/ui/
-data/synthetic/
-
-# MIMIC data files (user provides locally)
-results/disease_cohorts/*.csv
-results/disease_cohorts/*.parquet
-
-# Large/generated files
 *.pyc
-__pycache__/
+*.pyo
+*.pyd
+.Python
 *.egg-info/
+.cache/
+.pytest_cache/
+*.egg
 .DS_Store
-*.log
-.env
-*.pkl
-
-# Jupyter cache
-.ipynb_checkpoints/
-
-# IDE
 .vscode/
 .idea/
 *.swp
-
+.env

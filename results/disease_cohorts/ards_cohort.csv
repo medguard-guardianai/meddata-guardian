@@ -1,0 +1,531 @@
+race,sex,age,insurance,admission_type,mortality,comorbidities,los_days,severity,ef_percent
+White,M,61,Private,EW EMER.,0,4,17,93,56
+White,F,63,Private,URGENT,0,2,17,66,57
+Asian,M,80,Medicaid,EW EMER.,1,3,0,68,32
+White,F,50,Medicare,EW EMER.,1,4,9,24,23
+White,M,54,Private,URGENT,0,4,14,41,69
+White,F,52,Other,DIRECT EMER.,1,0,13,33,41
+Black,M,52,Medicaid,OBSERVATION ADMIT,0,0,33,96,66
+White,F,48,Private,OBSERVATION ADMIT,0,1,12,91,39
+White,M,68,Medicaid,OBSERVATION ADMIT,0,2,27,58,38
+White,F,45,Private,URGENT,1,3,15,68,53
+Hispanic,F,76,Unknown,EW EMER.,0,3,39,95,55
+White,M,60,Medicaid,EW EMER.,0,2,170,39,61
+White,M,70,Medicare,EW EMER.,0,2,1,38,73
+White,M,58,Medicare,SURGICAL SAME DAY ADMISSION,0,4,43,62,47
+White,F,68,Private,EW EMER.,1,4,38,76,34
+White,F,57,Private,OBSERVATION ADMIT,0,4,4,47,46
+White,F,48,Medicare,OBSERVATION ADMIT,0,4,27,70,62
+White,F,81,Private,OBSERVATION ADMIT,1,0,15,67,72
+White,F,49,Medicare,OBSERVATION ADMIT,0,3,28,93,54
+White,F,45,Unknown,URGENT,1,2,10,73,56
+White,F,76,Medicare,URGENT,1,1,8,76,68
+White,F,45,Medicare,OBSERVATION ADMIT,0,4,31,31,69
+White,F,70,Medicare,OBSERVATION ADMIT,1,3,12,50,40
+White,F,61,Medicaid,SURGICAL SAME DAY ADMISSION,0,2,51,56,24
+Hispanic,M,58,Other,URGENT,1,2,13,72,73
+White,M,58,Private,URGENT,0,1,75,50,37
+Black,M,47,Medicare,OBSERVATION ADMIT,0,2,66,74,21
+White,M,51,Private,OBSERVATION ADMIT,1,1,19,43,54
+Black,M,64,Private,SURGICAL SAME DAY ADMISSION,0,0,52,74,69
+White,M,58,Other,ELECTIVE,0,0,20,95,70
+White,M,70,Medicare,DIRECT EMER.,0,2,66,50,50
+Black,F,82,Private,OBSERVATION ADMIT,0,3,149,69,60
+Black,M,77,Private,EW EMER.,1,2,11,82,42
+White,F,84,Medicaid,EW EMER.,0,0,34,40,51
+Black,M,77,Medicaid,URGENT,0,3,51,59,29
+Asian,F,60,Medicaid,URGENT,1,0,7,22,43
+Black,M,45,Medicaid,URGENT,0,4,59,63,50
+White,F,65,Medicare,URGENT,1,3,1,56,70
+White,F,55,Medicare,EW EMER.,0,1,43,69,49
+White,M,59,Private,URGENT,0,4,87,52,59
+White,F,62,Medicare,DIRECT EMER.,0,1,5,53,55
+White,M,75,Private,URGENT,1,0,0,49,25
+White,F,59,Medicare,URGENT,0,4,20,78,73
+White,F,78,Medicare,EW EMER.,0,4,11,76,28
+White,F,68,Private,ELECTIVE,1,0,6,80,77
+White,M,72,Private,SURGICAL SAME DAY ADMISSION,1,4,6,78,76
+Black,F,63,Medicaid,OBSERVATION ADMIT,1,3,7,41,27
+Black,M,79,Medicare,URGENT,1,1,18,38,78
+White,M,45,Private,OBSERVATION ADMIT,1,1,0,78,76
+Black,F,64,Medicare,EW EMER.,0,1,25,82,71
+White,M,70,Medicaid,EW EMER.,0,2,29,89,32
+Black,F,79,Medicare,OBSERVATION ADMIT,0,4,16,53,48
+Asian,F,65,Private,OBSERVATION ADMIT,0,0,27,27,72
+Hispanic,M,74,Medicaid,EW EMER.,0,3,9,67,33
+Black,F,56,Medicare,OBSERVATION ADMIT,0,4,18,93,47
+White,M,77,Private,URGENT,1,1,1,71,46
+Hispanic,F,50,Medicaid,EW EMER.,0,1,37,38,72
+White,M,67,Private,EW EMER.,0,2,127,55,77
+White,F,55,Medicare,EU OBSERVATION,0,0,0,88,32
+White,F,65,Private,DIRECT EMER.,1,4,12,81,53
+Asian,M,54,Private,EW EMER.,0,4,72,48,42
+Black,F,75,Medicaid,EW EMER.,0,0,27,73,44
+White,M,52,Medicaid,URGENT,0,4,62,45,79
+Black,M,54,Medicaid,URGENT,0,3,53,20,70
+White,M,52,Medicare,EW EMER.,1,0,32,76,30
+White,M,57,Private,OBSERVATION ADMIT,0,2,12,95,76
+Black,M,80,Other,URGENT,1,4,25,75,54
+White,F,55,Medicare,EW EMER.,0,4,2,45,70
+Asian,F,58,Medicaid,URGENT,0,0,11,91,30
+Hispanic,M,73,Private,URGENT,1,2,27,53,20
+White,M,61,Medicare,OBSERVATION ADMIT,1,0,19,27,61
+White,M,71,Private,EW EMER.,1,3,1,45,72
+Black,M,60,Medicare,URGENT,1,1,2,71,58
+White,F,70,Medicare,OBSERVATION ADMIT,1,3,14,75,70
+Black,F,52,Medicare,OBSERVATION ADMIT,0,3,4,51,64
+White,M,54,Medicare,SURGICAL SAME DAY ADMISSION,1,1,6,41,66
+Black,F,83,Medicare,URGENT,0,1,47,34,60
+Black,F,46,Medicare,DIRECT EMER.,1,3,12,43,43
+White,F,65,Medicare,URGENT,1,3,6,68,74
+White,F,73,Medicare,EW EMER.,0,4,42,91,25
+White,F,53,Private,URGENT,0,1,20,94,60
+White,F,82,Medicare,URGENT,1,3,2,72,30
+Black,M,64,Other,EW EMER.,0,0,56,64,30
+White,F,73,Medicaid,OBSERVATION ADMIT,1,3,6,41,22
+White,M,65,Medicare,EW EMER.,0,0,8,81,34
+White,M,65,Medicare,URGENT,0,3,6,42,78
+White,M,68,Medicare,EW EMER.,1,4,1,57,21
+White,M,68,Medicaid,OBSERVATION ADMIT,0,4,9,76,49
+Hispanic,M,60,Medicare,OBSERVATION ADMIT,1,0,15,54,47
+White,M,62,Private,OBSERVATION ADMIT,1,2,69,62,24
+White,M,84,Medicaid,URGENT,0,3,2,62,46
+White,M,63,Medicaid,OBSERVATION ADMIT,0,4,1,64,52
+White,M,77,Medicaid,URGENT,0,1,6,83,68
+White,M,66,Medicare,EW EMER.,1,0,11,42,68
+Black,M,83,Medicaid,URGENT,1,1,6,40,77
+White,M,74,Medicare,URGENT,1,4,5,57,54
+White,F,63,Medicare,OBSERVATION ADMIT,0,1,22,94,78
+White,M,60,Private,EW EMER.,0,2,5,52,62
+White,M,57,Medicare,EW EMER.,0,4,11,67,68
+White,M,62,Medicare,URGENT,1,2,17,20,75
+Asian,M,83,Private,URGENT,0,2,15,38,51
+White,F,73,Medicare,SURGICAL SAME DAY ADMISSION,1,2,11,38,34
+White,F,54,Private,EW EMER.,0,2,16,86,60
+White,F,83,Private,OBSERVATION ADMIT,0,2,33,27,73
+White,F,51,Medicare,OBSERVATION ADMIT,0,3,9,97,22
+White,F,52,Medicare,OBSERVATION ADMIT,1,4,13,48,28
+White,F,63,Medicare,OBSERVATION ADMIT,1,3,1,86,57
+White,F,72,Medicare,EW EMER.,1,0,6,52,51
+White,F,53,Medicare,EW EMER.,0,1,57,73,38
+Black,M,77,Private,URGENT,0,4,93,56,49
+White,F,83,Medicaid,OBSERVATION ADMIT,0,4,29,85,64
+White,M,74,Private,EW EMER.,1,2,20,64,33
+White,M,77,Private,EW EMER.,0,0,19,83,59
+Black,M,81,Unknown,EU OBSERVATION,0,4,0,97,27
+White,M,55,Medicare,URGENT,0,0,17,90,37
+Black,F,67,Medicare,OBSERVATION ADMIT,0,1,36,43,42
+Black,M,50,Medicaid,EW EMER.,0,2,11,28,59
+White,F,84,Medicare,EW EMER.,0,0,45,45,37
+White,F,81,Medicaid,OBSERVATION ADMIT,0,2,26,37,71
+White,M,67,Medicare,EW EMER.,1,1,15,33,54
+White,M,84,Medicare,EW EMER.,0,1,14,74,79
+Black,F,45,Medicaid,URGENT,0,2,4,72,58
+White,M,56,Medicare,OBSERVATION ADMIT,1,4,3,84,41
+White,M,46,Private,EW EMER.,0,0,67,48,33
+White,M,73,Medicare,URGENT,0,0,17,34,29
+Black,M,78,Medicare,OBSERVATION ADMIT,0,1,38,94,44
+Hispanic,M,49,Medicare,EW EMER.,0,1,41,80,33
+White,M,54,Medicare,EW EMER.,0,4,23,64,28
+Hispanic,F,60,Medicaid,EW EMER.,0,4,40,96,26
+White,F,52,Medicare,EW EMER.,0,1,5,50,32
+White,M,50,Private,URGENT,1,2,3,71,77
+White,F,74,Medicare,EW EMER.,1,1,0,44,35
+White,M,58,Medicaid,DIRECT EMER.,0,0,111,85,52
+White,M,51,Other,URGENT,1,4,4,69,76
+White,M,79,Private,URGENT,0,0,39,41,38
+White,F,81,Medicaid,URGENT,0,2,8,39,69
+White,F,81,Medicare,EW EMER.,0,0,20,75,27
+Black,M,83,Unknown,OBSERVATION ADMIT,0,0,14,64,58
+Black,F,80,Private,URGENT,1,0,7,90,43
+White,M,75,Medicare,URGENT,0,1,32,30,43
+Black,F,69,Medicaid,OBSERVATION ADMIT,1,3,24,70,61
+White,M,56,Medicaid,EW EMER.,1,0,19,39,51
+White,F,84,Other,EW EMER.,1,0,11,77,70
+Hispanic,M,77,Private,EW EMER.,0,3,72,42,50
+White,M,73,Medicaid,OBSERVATION ADMIT,1,1,4,52,40
+White,F,61,Medicare,URGENT,1,3,1,73,35
+White,M,63,Medicare,URGENT,0,1,27,76,71
+Hispanic,F,54,Private,URGENT,1,0,14,38,45
+White,M,60,Medicare,URGENT,0,0,29,46,60
+Hispanic,M,46,Medicaid,URGENT,0,1,34,67,71
+White,F,63,Medicare,SURGICAL SAME DAY ADMISSION,0,3,28,86,39
+White,M,73,Private,URGENT,0,2,36,93,53
+White,M,63,Private,EW EMER.,0,4,112,89,38
+Asian,M,63,Medicare,EW EMER.,0,1,34,58,69
+Black,F,70,Medicare,URGENT,0,3,21,29,69
+White,F,45,Medicare,URGENT,1,4,1,65,67
+Hispanic,M,65,Private,EW EMER.,0,4,102,33,33
+White,F,49,Medicaid,EW EMER.,0,0,21,67,72
+Black,M,58,Medicare,URGENT,0,3,36,76,76
+Hispanic,M,63,Private,OBSERVATION ADMIT,1,1,20,79,53
+Asian,M,70,Private,OBSERVATION ADMIT,1,0,51,47,55
+Hispanic,F,63,Medicare,EW EMER.,0,0,38,34,36
+White,M,78,Private,DIRECT EMER.,0,0,14,85,45
+Hispanic,F,58,Medicaid,EW EMER.,0,2,5,70,72
+White,F,58,Medicare,ELECTIVE,0,1,46,88,31
+White,M,74,Medicare,OBSERVATION ADMIT,1,2,2,66,78
+White,F,62,Medicare,OBSERVATION ADMIT,1,4,28,71,62
+Hispanic,M,72,Medicare,OBSERVATION ADMIT,1,1,22,20,72
+White,F,61,Medicaid,SURGICAL SAME DAY ADMISSION,0,4,29,51,25
+Hispanic,M,71,Medicare,EW EMER.,0,0,36,87,21
+Black,F,49,Medicare,URGENT,1,3,11,49,33
+White,F,74,Medicare,EW EMER.,1,2,2,58,49
+Hispanic,M,57,Private,EW EMER.,1,2,26,81,55
+White,M,68,Medicare,OBSERVATION ADMIT,1,3,5,37,44
+Hispanic,F,66,Medicaid,URGENT,0,3,21,21,45
+Asian,M,76,Medicare,EW EMER.,0,0,39,61,23
+White,F,64,Medicare,OBSERVATION ADMIT,0,2,33,84,77
+Black,M,71,Medicare,EW EMER.,0,4,17,52,67
+Black,F,84,Medicare,URGENT,0,0,65,69,51
+Black,M,58,Private,EW EMER.,1,3,7,78,47
+White,F,46,Private,SURGICAL SAME DAY ADMISSION,0,1,31,38,27
+White,F,52,Medicare,EW EMER.,1,2,20,80,71
+White,M,57,Medicare,URGENT,1,2,8,46,32
+White,M,81,Medicare,OBSERVATION ADMIT,0,4,30,83,41
+Black,F,83,Medicare,URGENT,0,4,39,73,48
+White,M,68,Medicaid,EW EMER.,0,2,29,21,36
+White,F,76,Medicare,OBSERVATION ADMIT,1,2,0,63,37
+White,F,55,Medicare,URGENT,1,0,2,69,55
+White,M,63,Medicare,OBSERVATION ADMIT,1,1,13,54,74
+White,F,74,Medicare,EW EMER.,1,0,9,73,32
+White,M,73,Medicaid,OBSERVATION ADMIT,1,3,24,86,70
+White,M,76,Medicaid,EW EMER.,0,0,29,87,74
+White,F,67,Private,EW EMER.,0,2,10,36,37
+White,M,69,Medicaid,EW EMER.,0,0,21,87,51
+Asian,F,49,Private,URGENT,0,3,8,98,20
+White,M,76,Medicare,URGENT,1,0,8,41,41
+White,F,53,Medicare,OBSERVATION ADMIT,0,2,26,45,26
+Hispanic,M,52,Medicaid,OBSERVATION ADMIT,0,4,14,72,69
+White,M,53,Medicare,EW EMER.,1,1,4,24,39
+Hispanic,M,72,Medicare,EW EMER.,1,4,7,53,47
+Black,F,49,Medicaid,SURGICAL SAME DAY ADMISSION,1,1,50,42,33
+Black,F,71,Medicaid,EW EMER.,1,3,28,83,66
+White,M,79,Medicaid,EW EMER.,0,3,15,39,44
+Asian,F,70,Medicaid,OBSERVATION ADMIT,0,1,7,32,53
+Black,F,84,Medicare,OBSERVATION ADMIT,1,2,22,44,59
+White,M,70,Medicare,URGENT,1,4,12,26,57
+White,M,80,Medicare,URGENT,1,0,16,55,69
+White,F,62,Medicare,EW EMER.,0,3,5,84,65
+White,M,54,Medicare,URGENT,1,0,16,80,79
+Black,F,53,Medicaid,OBSERVATION ADMIT,0,3,17,22,50
+White,M,46,Private,EW EMER.,0,3,22,90,66
+White,M,52,Private,EW EMER.,0,2,20,33,24
+White,F,66,Private,URGENT,0,4,20,37,33
+Hispanic,M,62,Medicaid,EW EMER.,0,0,14,84,48
+Black,F,52,Medicaid,DIRECT EMER.,0,1,2,29,39
+Hispanic,M,80,Medicare,URGENT,0,4,22,90,64
+Black,F,83,Medicare,EW EMER.,0,2,11,88,25
+Asian,M,77,Medicare,URGENT,0,4,0,62,24
+Black,M,58,Medicare,OBSERVATION ADMIT,0,0,27,99,33
+Black,F,63,Private,URGENT,0,1,63,84,37
+Black,M,50,Medicaid,OBSERVATION ADMIT,0,0,37,52,23
+White,M,73,Private,OBSERVATION ADMIT,0,2,19,60,47
+White,M,76,Medicare,OBSERVATION ADMIT,0,4,23,54,45
+White,M,82,Medicare,URGENT,1,0,98,80,58
+Black,F,76,Medicare,URGENT,0,1,43,64,76
+White,M,55,Unknown,EW EMER.,1,4,0,58,66
+White,M,58,Private,EW EMER.,1,2,10,90,33
+White,M,51,Medicaid,EW EMER.,1,0,52,22,61
+White,F,48,Private,EW EMER.,0,1,31,77,51
+White,F,78,Medicare,EW EMER.,0,3,14,50,69
+White,M,71,Medicare,DIRECT OBSERVATION,0,1,2,26,65
+Black,M,76,Medicare,EW EMER.,0,2,7,87,52
+Black,M,84,Private,URGENT,0,2,38,26,75
+White,M,75,Private,OBSERVATION ADMIT,1,4,16,54,29
+Hispanic,F,72,Medicaid,URGENT,1,1,11,90,60
+Black,M,55,Medicare,URGENT,0,0,82,33,29
+Black,F,79,Medicaid,OBSERVATION ADMIT,0,1,47,97,33
+White,M,79,Medicare,EW EMER.,0,2,32,25,48
+White,F,57,Medicare,OBSERVATION ADMIT,1,1,18,77,53
+Black,M,63,Private,URGENT,0,0,33,51,63
+White,F,68,Medicare,EW EMER.,1,2,9,85,62
+White,M,53,Private,EW EMER.,0,2,16,81,35
+White,M,57,Medicaid,OBSERVATION ADMIT,0,0,29,63,41
+White,F,75,Private,EU OBSERVATION,0,3,0,89,42
+White,F,68,Private,DIRECT EMER.,0,4,31,98,26
+Hispanic,F,61,Medicare,OBSERVATION ADMIT,1,4,25,83,79
+White,F,66,Private,URGENT,1,4,4,22,63
+Hispanic,M,64,Medicaid,URGENT,0,4,29,61,21
+White,F,45,Medicare,EW EMER.,0,0,25,76,29
+White,M,81,Private,EW EMER.,1,4,28,24,73
+Black,F,57,Medicaid,URGENT,1,4,6,25,48
+White,M,61,Private,EW EMER.,0,3,17,65,35
+Black,M,57,Private,EW EMER.,0,1,46,45,34
+White,M,57,Private,DIRECT EMER.,1,4,33,67,66
+Black,F,45,Private,URGENT,0,0,10,28,53
+White,M,49,Private,EW EMER.,1,2,23,54,42
+White,M,50,Medicare,EW EMER.,0,4,16,62,54
+Black,F,65,Medicaid,URGENT,0,2,14,52,46
+White,F,60,Medicare,SURGICAL SAME DAY ADMISSION,0,4,98,59,33
+Asian,M,82,Medicaid,URGENT,0,2,82,82,79
+White,F,74,Medicare,EW EMER.,0,4,17,20,34
+White,F,80,Medicare,URGENT,0,4,15,74,24
+Black,M,81,Medicare,DIRECT OBSERVATION,0,1,0,85,39
+Black,M,76,Private,DIRECT EMER.,0,2,22,72,54
+White,M,55,Medicare,SURGICAL SAME DAY ADMISSION,0,0,45,76,40
+White,F,52,Private,EW EMER.,0,2,19,24,33
+White,M,75,Medicare,URGENT,0,4,20,26,77
+White,F,76,Private,EW EMER.,0,2,9,63,36
+White,M,57,Other,OBSERVATION ADMIT,1,1,5,22,47
+Black,F,51,Medicare,EW EMER.,1,4,16,82,21
+Black,M,72,Private,URGENT,0,0,24,46,72
+White,M,65,Medicaid,EW EMER.,1,2,7,71,51
+White,F,47,Medicare,URGENT,1,3,1,77,58
+Black,M,84,Medicare,URGENT,1,4,6,21,61
+Black,F,46,Medicare,URGENT,0,4,92,77,79
+Black,M,62,Medicare,EW EMER.,1,2,15,43,33
+White,M,74,Medicare,SURGICAL SAME DAY ADMISSION,1,1,32,68,48
+White,M,83,Medicare,EW EMER.,0,1,44,74,29
+Asian,M,50,Unknown,DIRECT OBSERVATION,0,0,0,68,77
+White,F,51,Medicare,URGENT,1,1,1,55,75
+Hispanic,F,61,Medicaid,OBSERVATION ADMIT,0,1,7,69,23
+White,M,66,Private,URGENT,1,3,9,70,71
+Asian,M,54,Medicare,OBSERVATION ADMIT,1,0,15,48,20
+Hispanic,M,55,Medicare,OBSERVATION ADMIT,0,0,3,51,37
+White,F,59,Private,URGENT,1,1,8,67,69
+Asian,M,56,Medicaid,DIRECT EMER.,0,3,96,34,78
+White,F,61,Medicaid,URGENT,0,3,24,88,30
+White,M,69,Other,DIRECT EMER.,0,4,11,79,47
+Black,M,70,Medicaid,EW EMER.,0,3,10,68,30
+White,M,59,Medicare,SURGICAL SAME DAY ADMISSION,1,0,11,68,23
+White,M,45,Medicare,EW EMER.,1,4,20,53,46
+White,F,81,Medicare,EW EMER.,1,4,39,82,51
+White,M,64,Medicaid,URGENT,0,3,7,76,79
+Asian,F,50,Private,OBSERVATION ADMIT,0,3,47,25,38
+White,M,58,Medicare,EW EMER.,0,3,8,43,77
+White,M,82,Medicare,EW EMER.,0,4,39,28,35
+Hispanic,M,64,Private,EW EMER.,1,4,23,44,61
+White,M,61,Private,URGENT,0,3,40,20,76
+Black,M,66,Private,EW EMER.,1,1,54,52,41
+White,F,46,Medicare,EW EMER.,1,1,4,96,45
+White,F,56,Medicare,EW EMER.,0,4,1,57,54
+Asian,F,72,Private,EW EMER.,1,3,5,75,28
+Hispanic,F,52,Medicare,URGENT,1,3,5,46,34
+Asian,M,56,Medicare,OBSERVATION ADMIT,0,2,31,79,70
+White,M,60,Medicaid,OBSERVATION ADMIT,1,4,47,63,56
+White,F,53,Private,OBSERVATION ADMIT,0,0,2,45,27
+White,F,75,Medicare,EW EMER.,1,3,2,24,42
+White,M,83,Medicare,EW EMER.,1,4,1,80,36
+White,M,45,Medicare,EW EMER.,0,1,16,24,66
+White,F,58,Medicare,URGENT,1,3,8,20,20
+White,M,47,Medicaid,URGENT,0,1,226,67,21
+White,F,81,Medicare,EW EMER.,1,2,18,77,41
+White,M,64,Private,URGENT,1,3,13,89,62
+Asian,M,52,Medicaid,SURGICAL SAME DAY ADMISSION,0,4,43,40,69
+White,F,75,Medicare,OBSERVATION ADMIT,0,3,49,73,59
+Black,M,76,Private,URGENT,0,0,21,94,34
+White,M,70,Medicare,OBSERVATION ADMIT,1,0,5,77,62
+Black,F,84,Private,EW EMER.,0,0,27,94,22
+White,M,48,Medicare,EW EMER.,1,0,16,67,41
+White,M,49,Medicare,OBSERVATION ADMIT,0,4,6,34,29
+White,M,61,Medicare,EW EMER.,1,4,24,36,72
+Black,M,76,Private,EW EMER.,0,1,19,58,59
+White,M,73,Medicare,EW EMER.,1,3,0,37,22
+White,F,61,Medicare,URGENT,0,3,7,47,43
+Black,F,69,Medicare,EW EMER.,0,1,23,63,42
+White,M,48,Private,URGENT,0,0,0,97,36
+White,M,83,Private,EW EMER.,0,4,26,42,57
+White,M,63,Private,URGENT,1,3,0,23,74
+White,M,76,Private,URGENT,1,2,6,70,30
+Hispanic,M,68,Medicare,EW EMER.,1,0,15,24,25
+White,M,45,Private,EW EMER.,0,3,25,24,61
+White,F,50,Private,OBSERVATION ADMIT,1,1,41,75,21
+White,M,79,Medicaid,EW EMER.,0,2,19,30,26
+Black,F,66,Medicaid,URGENT,1,2,9,94,78
+White,M,53,Unknown,URGENT,0,2,7,42,58
+White,M,70,Unknown,URGENT,1,3,9,28,35
+Black,M,73,Private,EW EMER.,0,4,43,24,24
+White,F,83,Medicaid,URGENT,0,0,47,32,49
+White,M,70,Medicare,URGENT,0,0,66,73,28
+White,M,59,Private,URGENT,0,1,78,62,42
+White,M,75,Private,EW EMER.,0,1,6,93,44
+White,M,62,Medicaid,EW EMER.,1,2,23,21,52
+Black,F,58,Medicare,EW EMER.,0,3,29,84,33
+Black,M,78,Medicaid,EW EMER.,0,4,6,85,29
+White,M,45,Medicaid,EW EMER.,1,2,0,38,61
+Black,M,78,Medicare,URGENT,1,0,23,45,56
+Black,M,55,Private,URGENT,0,4,16,40,34
+Hispanic,M,77,Medicare,URGENT,0,0,39,47,67
+White,F,76,Private,URGENT,0,1,24,94,37
+Hispanic,M,54,Private,EW EMER.,0,0,18,61,27
+White,M,65,Private,EW EMER.,0,2,44,29,54
+White,M,73,Medicare,EW EMER.,1,0,1,99,70
+White,F,54,Private,URGENT,0,3,23,21,26
+Black,M,54,Private,EW EMER.,0,1,35,59,79
+Black,M,50,Medicaid,EW EMER.,1,4,9,59,22
+White,M,63,Medicare,ELECTIVE,0,2,10,39,79
+White,F,66,Private,URGENT,0,0,21,24,28
+White,M,51,Medicare,URGENT,1,2,27,48,68
+White,F,67,Medicare,OBSERVATION ADMIT,1,4,5,29,53
+White,M,84,Private,EW EMER.,0,4,14,83,41
+White,M,73,Private,URGENT,0,0,46,53,57
+White,M,77,Medicaid,URGENT,1,0,89,48,57
+Black,F,79,Medicare,OBSERVATION ADMIT,1,3,5,33,72
+White,M,70,Medicare,EW EMER.,0,1,16,23,35
+Black,M,78,Medicaid,URGENT,0,2,21,67,46
+White,F,73,Medicaid,OBSERVATION ADMIT,0,2,16,72,73
+White,M,79,Medicare,EW EMER.,0,1,30,65,21
+White,M,45,Other,URGENT,0,4,24,30,74
+White,M,56,Medicare,OBSERVATION ADMIT,1,2,11,37,77
+White,F,74,Medicaid,EW EMER.,1,0,10,75,67
+White,F,64,Medicare,DIRECT EMER.,1,0,5,51,51
+White,F,53,Private,EW EMER.,0,3,85,35,43
+White,M,67,Medicare,EW EMER.,1,3,3,74,71
+White,M,62,Medicare,EW EMER.,0,2,11,89,33
+White,M,66,Medicaid,SURGICAL SAME DAY ADMISSION,0,1,81,41,46
+White,M,55,Private,EW EMER.,0,1,25,55,60
+Black,F,49,Medicare,EW EMER.,1,4,59,75,74
+White,M,77,Private,URGENT,0,0,15,29,71
+White,M,81,Medicare,URGENT,1,3,13,99,61
+White,M,59,Private,SURGICAL SAME DAY ADMISSION,0,0,4,54,55
+White,M,60,Private,URGENT,0,2,67,30,29
+Hispanic,M,58,Medicaid,URGENT,1,0,0,94,40
+White,M,82,Medicare,URGENT,1,2,22,43,61
+White,F,73,Private,URGENT,0,3,88,48,68
+White,F,59,Private,AMBULATORY OBSERVATION,0,1,0,21,27
+Black,M,58,Medicaid,EW EMER.,1,0,6,41,71
+White,F,73,Medicaid,OBSERVATION ADMIT,0,0,29,20,75
+White,M,79,Medicare,EW EMER.,1,0,25,53,50
+Hispanic,M,48,Medicare,EW EMER.,1,1,22,60,60
+White,F,77,Private,EW EMER.,1,0,2,74,54
+Asian,M,54,Medicaid,OBSERVATION ADMIT,1,0,4,75,67
+White,M,61,Private,OBSERVATION ADMIT,1,0,10,79,59
+White,F,67,Medicare,EW EMER.,1,1,6,31,44
+White,M,54,Other,URGENT,1,0,1,61,53
+White,M,52,Medicare,OBSERVATION ADMIT,0,1,35,44,42
+White,M,56,Medicare,URGENT,1,3,14,26,44
+White,M,63,Other,URGENT,1,3,9,54,44
+Black,F,45,Medicaid,OBSERVATION ADMIT,1,4,28,29,25
+White,M,51,Medicare,URGENT,1,2,5,85,43
+White,F,51,Medicare,URGENT,0,2,40,93,66
+White,M,76,Medicare,URGENT,1,3,7,23,78
+White,M,81,Medicaid,EW EMER.,0,0,12,23,37
+White,M,51,Private,EW EMER.,0,1,24,86,71
+White,M,77,Medicare,OBSERVATION ADMIT,0,2,14,27,36
+White,F,48,Medicare,OBSERVATION ADMIT,1,3,19,44,59
+White,M,62,Private,EW EMER.,0,0,27,97,77
+White,F,57,Medicare,EW EMER.,0,1,18,52,39
+Hispanic,M,83,Private,OBSERVATION ADMIT,0,2,43,24,37
+White,M,64,Private,OBSERVATION ADMIT,0,4,32,95,46
+White,M,63,Medicare,EW EMER.,0,1,16,44,24
+White,M,70,Private,EW EMER.,1,0,48,84,63
+White,M,75,Medicare,EW EMER.,0,4,4,36,72
+Black,F,53,Medicaid,URGENT,0,2,8,22,33
+White,F,71,Medicaid,EW EMER.,0,2,28,23,54
+Black,F,53,Private,EW EMER.,0,1,8,46,60
+Hispanic,M,60,Private,URGENT,0,0,22,63,67
+White,M,71,Private,URGENT,0,4,39,68,56
+Black,F,65,Private,OBSERVATION ADMIT,1,3,19,37,33
+White,F,70,Private,DIRECT EMER.,0,1,26,37,55
+Black,M,82,Medicare,OBSERVATION ADMIT,0,4,20,78,21
+Black,F,81,Private,EW EMER.,0,0,13,49,28
+White,F,59,Private,URGENT,1,4,3,77,50
+White,M,56,Medicare,URGENT,1,4,17,45,35
+Black,M,69,Medicaid,EW EMER.,1,4,156,79,29
+White,M,68,Private,DIRECT EMER.,0,0,32,45,79
+White,F,57,Medicare,EW EMER.,1,4,12,51,75
+Asian,M,77,Private,OBSERVATION ADMIT,1,3,2,99,45
+White,M,80,Private,URGENT,0,2,14,41,31
+White,F,67,Other,EW EMER.,1,2,16,77,52
+White,F,46,Medicare,OBSERVATION ADMIT,0,1,33,51,66
+White,M,84,Private,EW EMER.,0,0,17,35,26
+White,M,82,Medicare,EW EMER.,1,1,12,88,68
+White,F,82,Private,EW EMER.,1,0,0,22,63
+Black,M,51,Medicare,OBSERVATION ADMIT,1,4,14,48,29
+Asian,M,54,Medicare,OBSERVATION ADMIT,1,0,9,70,26
+White,M,78,Medicare,URGENT,1,0,2,41,25
+White,M,74,Medicare,EW EMER.,0,4,19,84,22
+Black,F,58,Medicare,OBSERVATION ADMIT,1,1,5,92,42
+Black,F,61,Private,OBSERVATION ADMIT,0,1,10,92,73
+White,M,47,Medicare,EW EMER.,0,4,42,89,65
+White,M,77,Medicare,EW EMER.,1,4,11,65,62
+White,M,68,Private,URGENT,1,0,8,71,36
+White,M,53,Medicare,URGENT,0,2,29,23,67
+White,F,71,Medicare,OBSERVATION ADMIT,1,2,27,29,24
+Black,M,46,Medicare,EW EMER.,0,2,64,46,63
+White,M,49,Private,URGENT,1,3,2,83,77
+White,M,66,Private,EW EMER.,0,1,53,69,41
+Black,F,59,Private,OBSERVATION ADMIT,1,2,12,92,67
+Asian,M,82,Medicaid,OBSERVATION ADMIT,0,4,11,30,31
+White,M,63,Medicare,EW EMER.,1,4,5,66,20
+Hispanic,M,76,Medicare,OBSERVATION ADMIT,1,3,15,96,30
+White,M,70,Medicare,EW EMER.,1,0,1,70,73
+White,M,78,Private,OBSERVATION ADMIT,1,1,41,83,43
+White,F,76,Private,OBSERVATION ADMIT,0,1,7,90,32
+White,M,83,Medicare,EW EMER.,1,4,24,25,58
+White,M,57,Medicaid,EW EMER.,0,3,33,49,72
+Asian,M,72,Medicare,EW EMER.,1,3,1,50,65
+White,M,63,Private,EW EMER.,0,4,68,54,45
+Black,M,64,Private,URGENT,1,4,20,32,34
+Hispanic,M,55,Medicare,EW EMER.,0,1,9,52,61
+Black,F,54,Medicare,OBSERVATION ADMIT,0,1,14,60,70
+White,F,59,Medicare,URGENT,0,2,11,56,62
+White,F,78,Medicare,OBSERVATION ADMIT,1,4,23,69,72
+Hispanic,M,79,Medicare,EW EMER.,0,0,8,80,45
+Black,M,60,Medicare,EW EMER.,1,0,32,33,54
+Black,F,54,Medicare,EW EMER.,0,3,59,89,48
+White,F,67,Medicare,OBSERVATION ADMIT,0,2,10,46,75
+Hispanic,M,55,Private,OBSERVATION ADMIT,1,2,14,47,53
+White,M,63,Medicare,OBSERVATION ADMIT,0,2,13,68,21
+Black,F,69,Medicare,SURGICAL SAME DAY ADMISSION,0,4,24,98,23
+Black,M,78,Medicaid,OBSERVATION ADMIT,0,2,4,85,41
+White,M,60,Private,ELECTIVE,1,3,84,92,64
+White,F,80,Medicare,EW EMER.,0,4,12,79,50
+White,F,84,Medicare,EW EMER.,1,4,5,63,55
+Black,M,68,Medicaid,EW EMER.,0,2,49,20,55
+White,F,63,Private,EW EMER.,0,0,60,29,49
+White,M,68,Medicare,EW EMER.,1,0,6,32,56
+Black,M,78,Private,OBSERVATION ADMIT,0,3,54,25,67
+Black,F,64,Private,EW EMER.,0,0,5,63,79
+White,M,71,Private,URGENT,0,3,9,21,32
+White,F,62,Medicare,URGENT,0,3,20,74,49
+Black,F,79,Medicare,EW EMER.,1,1,36,32,21
+White,M,62,Medicare,OBSERVATION ADMIT,1,2,7,28,22
+White,M,52,Medicare,URGENT,0,4,37,21,21
+White,M,73,Private,URGENT,0,4,46,88,29
+White,F,76,Medicare,EW EMER.,1,4,2,49,23
+White,M,50,Private,EW EMER.,0,3,43,84,58
+Hispanic,F,53,Medicaid,EW EMER.,1,0,7,71,40
+Black,F,74,Medicaid,EW EMER.,1,4,18,47,45
+White,M,70,Medicare,EW EMER.,0,1,26,27,60
+White,M,50,Private,OBSERVATION ADMIT,0,4,48,58,31
+Asian,M,78,Private,OBSERVATION ADMIT,0,0,19,65,43
+Black,F,54,Medicare,EW EMER.,0,3,44,44,33
+White,F,65,Medicare,EW EMER.,1,3,1,31,23
+White,M,64,Medicare,EW EMER.,1,4,12,89,44
+White,F,46,Private,OBSERVATION ADMIT,0,4,46,98,71
+White,F,67,Medicare,EW EMER.,1,0,5,31,57
+Hispanic,F,64,Other,OBSERVATION ADMIT,0,3,5,60,32
+White,F,69,Medicare,OBSERVATION ADMIT,0,1,45,81,43
+White,M,45,Private,URGENT,1,2,9,50,73
+White,F,70,Medicare,OBSERVATION ADMIT,0,2,74,94,37
+Asian,F,70,Medicare,URGENT,1,2,7,24,38
+Asian,M,60,Medicaid,EW EMER.,0,0,64,71,48
+White,M,81,Medicare,URGENT,0,3,7,47,72
+White,M,72,Private,URGENT,0,1,12,66,68
+White,F,56,Private,EW EMER.,1,3,5,46,23
+Asian,M,52,Medicare,URGENT,1,3,13,81,60
+White,M,66,Medicaid,EW EMER.,0,3,63,69,26
+White,F,65,Medicaid,EW EMER.,1,3,-1,88,50
+White,M,61,Medicare,OBSERVATION ADMIT,1,0,19,62,53
+White,M,62,Other,SURGICAL SAME DAY ADMISSION,0,1,35,45,27
+Hispanic,M,51,Medicaid,OBSERVATION ADMIT,0,4,55,81,63
+Asian,M,66,Medicare,URGENT,1,4,1,89,29
+White,F,68,Medicaid,URGENT,1,3,12,71,48
+Asian,F,73,Medicare,URGENT,1,3,0,28,68
+Asian,F,65,Private,OBSERVATION ADMIT,1,1,8,85,50
+White,M,78,Medicare,URGENT,1,2,38,98,62
+Black,F,66,Medicaid,URGENT,1,4,0,92,65
+White,M,63,Medicare,SURGICAL SAME DAY ADMISSION,0,0,47,70,43
+White,F,45,Medicare,URGENT,1,3,7,91,25
+Asian,F,59,Medicare,DIRECT EMER.,0,0,53,22,55
+White,F,80,Other,OBSERVATION ADMIT,1,0,5,72,64
+White,M,73,Medicare,OBSERVATION ADMIT,0,4,6,51,71
+Black,M,80,Medicaid,EW EMER.,0,2,7,67,20
+White,M,50,Unknown,EW EMER.,0,4,29,21,41
+Asian,M,68,Medicare,EW EMER.,1,4,15,26,79
+Black,M,67,Medicaid,URGENT,0,4,19,34,52
+Black,M,64,Medicaid,EW EMER.,0,0,37,54,40
+White,M,80,Private,OBSERVATION ADMIT,0,0,20,73,39
+White,F,77,Medicare,SURGICAL SAME DAY ADMISSION,1,1,20,65,38
